@@ -1,5 +1,14 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap");
 
+/* Ensure the background covers the entire screen */
+body,
+html,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
 .admin-container {
   min-height: 100vh;
   background: radial-gradient(
@@ -17,22 +26,28 @@
   font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Admin Header Styles */
 .admin-header {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   padding: 1.5rem 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .admin-header h1 {
   margin: 0;
   font-family: "Orbitron", sans-serif;
-  color: #fff;
+  color: #00ffff;
   font-size: 2rem;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+  text-align: center;
+  grid-column: 2;
 }
 
+/* Logout Button Styles */
 .logout-btn {
   background: rgba(255, 255, 255, 0.1);
   color: #ff6b6b;
@@ -46,25 +61,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  position: absolute;
-  right: 2rem;
-  top: 50%;
-  transform: translateY(-50%);
+  grid-column: 3;
+  justify-self: end;
 }
 
 .logout-btn:hover {
   background: rgba(255, 107, 107, 0.2);
-  box-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
 }
 
 .back-arrow {
-  display: none; /* Hidden by default on desktop */
+  display: none;
 }
 
-.logout-text {
-  display: inline;
+.logout-icon {
+  display: none;
 }
 
+/* Main Content Area */
 .admin-main {
   padding: 3rem 2rem;
 }
@@ -77,6 +91,7 @@
   margin: 0 auto;
 }
 
+/* Admin Tile Styles */
 .admin-tile {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
@@ -124,14 +139,6 @@
   line-height: 1.6;
   opacity: 0.8;
   margin: 0;
-  font-family: "Inter", sans-serif;
-}
-
-/* Show text on larger screens */
-@media (min-width: 768px) {
-  .admin-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 /* Mobile adjustments - Show back arrow, hide text */
@@ -150,16 +157,40 @@
   }
 
   .logout-text {
-    display: none; /* Hide text on mobile */
+    display: none;
   }
 
   .back-arrow {
-    display: inline; /* Show arrow on mobile */
+    display: inline;
     font-size: 1.3rem;
     font-weight: bold;
   }
 
   .admin-main {
     padding: 2rem 1rem;
+  }
+
+  /* Layout for larger screens */
+  @media (min-width: 768px) {
+    .admin-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* Ensure the background covers the entire mobile screen */
+  .admin-container {
+    min-height: 100vh;
+    background: radial-gradient(
+        circle at 10% 20%,
+        rgba(25, 50, 80, 0.7) 0%,
+        transparent 30%
+      ),
+      radial-gradient(
+        circle at 90% 80%,
+        rgba(80, 25, 80, 0.7) 0%,
+        transparent 30%
+      ),
+      linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%) fixed;
+    background-size: cover;
   }
 }

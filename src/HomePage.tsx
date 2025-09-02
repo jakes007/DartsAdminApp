@@ -5,7 +5,7 @@ const HomePage = () => {
   return (
     <div className="homepage-container">
       <header className="app-header">
-        <h1>Welcome | ODA</h1>
+        <h1>WELCOME</h1>
       </header>
 
       <main className="main-content">
