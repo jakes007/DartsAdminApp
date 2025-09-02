@@ -1,0 +1,150 @@
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600&family=Poppins:wght@300;400;500;600&display=swap");
+
+.admin-container {
+  min-height: 100vh;
+  background: radial-gradient(
+      circle at 10% 20%,
+      rgba(25, 50, 80, 0.7) 0%,
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 90% 80%,
+      rgba(80, 25, 80, 0.7) 0%,
+      transparent 30%
+    ),
+    linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  color: #e0e0e0;
+  font-family: "Poppins", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-header h1 {
+  margin: 0;
+  font-family: "Orbitron", sans-serif;
+  color: #fff;
+  font-size: 2rem;
+}
+
+.logout-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+  padding: 0.7rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 107, 107, 0.2);
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+}
+
+.logout-icon {
+  display: none;
+}
+
+.admin-main {
+  padding: 3rem 2rem;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-tile {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 2.5rem 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s ease;
+  cursor: pointer;
+  text-align: center;
+}
+
+.admin-tile:nth-child(1) {
+  border-left: 4px solid #ff00ff;
+}
+.admin-tile:nth-child(2) {
+  border-left: 4px solid #00ffff;
+}
+.admin-tile:nth-child(3) {
+  border-left: 4px solid #ffff00;
+}
+
+.admin-tile:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+.admin-tile:hover:nth-child(1) {
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
+}
+.admin-tile:hover:nth-child(2) {
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+}
+.admin-tile:hover:nth-child(3) {
+  box-shadow: 0 0 15px rgba(255, 255, 0, 0.7);
+}
+
+.admin-tile h2 {
+  font-size: 1.8rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-family: "Orbitron", sans-serif;
+}
+
+.admin-tile p {
+  line-height: 1.6;
+  opacity: 0.8;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .admin-header {
+    padding: 1rem;
+  }
+
+  .admin-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .logout-text {
+    display: none;
+  }
+
+  .logout-icon {
+    display: block;
+    font-size: 1.2rem;
+  }
+
+  .logout-btn {
+    padding: 0.7rem;
+  }
+
+  .admin-main {
+    padding: 2rem 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .admin-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
