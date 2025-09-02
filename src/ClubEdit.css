@@ -206,7 +206,11 @@ html,
   cursor: pointer;
 }
 
-.summary-tile:hover {
+.summary-tile.clickable {
+  cursor: pointer;
+}
+
+.summary-tile.clickable:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
@@ -424,44 +428,46 @@ html,
   padding: 1.5rem;
 }
 
-.modal-form {
+/* Compact form styling */
+.modal-form.compact-form {
   margin-bottom: 1.5rem;
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+.modal-form.compact-form .form-group {
+  margin-bottom: 1.2rem;
 }
 
-.modal-form .form-group {
-  margin-bottom: 1.5rem;
-}
-
-.modal-form .form-group label {
+.modal-form.compact-form .form-group label {
   display: block;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.5rem;
   font-weight: 500;
   text-align: left;
 }
 
-.modal-form .form-group input,
-.modal-form .form-group select {
+.modal-form.compact-form .form-group input,
+.modal-form.compact-form .form-group select {
   width: 100%;
-  padding: 0.8rem;
+  padding: 0.7rem;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 6px;
   color: white;
   font-family: "Inter", sans-serif;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
-.modal-form .form-group input:focus,
-.modal-form .form-group select:focus {
+.modal-form.compact-form .form-group input:focus,
+.modal-form.compact-form .form-group select:focus {
   outline: none;
   border-color: #00ffff;
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.modal-form.compact-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
 .teams-list,
@@ -483,9 +489,9 @@ html,
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem;
+  padding: 0.7rem;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  border-radius: 6px;
   margin-bottom: 0.5rem;
 }
 
@@ -558,6 +564,7 @@ html,
   color: #00ffff;
   border: 1px solid #00ffff;
   width: 100%;
+  margin-top: 0.5rem;
 }
 
 .add-another-btn:hover {
@@ -574,34 +581,136 @@ html,
 }
 
 .division-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .division-group h4 {
   color: #00ffff;
   font-family: "Orbitron", sans-serif;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.teams-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.5rem;
+.team-section {
+  margin-bottom: 1.5rem;
+  padding-left: 1rem;
 }
 
-.team-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 0.8rem;
+.team-subtitle {
+  color: #ff6b6b;
+  font-family: "Orbitron", sans-serif;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.players-container {
+  margin-left: 1rem;
+}
+
+.player-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0.7rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
 }
 
-.team-name {
-  font-weight: 500;
+.player-row.on-loan {
+  background-color: rgba(255, 215, 0, 0.1);
+  border-left: 3px solid gold;
+}
+
+.player-info {
+  flex: 1;
+}
+
+.loan-info {
+  color: gold;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.player-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-player-btn,
+.delete-player-btn,
+.loan-player-btn,
+.return-player-btn {
+  background: none;
+  border: none;
+  color: #00ffff;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.delete-player-btn {
+  color: #ff6b6b;
+}
+
+.loan-player-btn {
+  color: #ffa500;
+}
+
+.return-player-btn {
+  color: #32cd32;
+}
+
+.edit-player-btn:hover,
+.delete-player-btn:hover,
+.loan-player-btn:hover,
+.return-player-btn:hover {
+  opacity: 0.8;
+}
+
+.no-players {
+  font-style: italic;
+  opacity: 0.7;
+  margin-left: 1rem;
+}
+
+/* Loaned Players Modal */
+.loaned-players-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.loaned-player-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid gold;
+}
+
+.loaned-player-info h4 {
+  margin: 0 0 0.5rem;
+  color: gold;
+}
+
+.loaned-player-info p {
+  margin: 0.2rem 0;
+  opacity: 0.8;
+}
+
+.loaned-player-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.no-loaned-players {
+  text-align: center;
+  opacity: 0.7;
+  font-style: italic;
 }
 
 /* Mobile Responsive Styles */
@@ -646,7 +755,7 @@ html,
 
   .logout-icon {
     font-size: 1.5rem;
-    transform: rotate(90deg); /* Curved arrow for logout */
+    transform: rotate(90deg);
   }
 
   .club-edit-main {
@@ -677,17 +786,32 @@ html,
     min-width: 120px;
   }
 
+  /* Mobile modal fixes */
   .modal {
-    max-width: 100%;
-    margin: 1rem;
+    max-width: 95%;
+    margin: 0.5rem;
   }
 
-  .form-row {
+  .modal-form.compact-form .form-row {
     grid-template-columns: 1fr;
   }
 
-  .teams-container {
-    grid-template-columns: 1fr;
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .player-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .player-actions {
+    align-self: flex-end;
+  }
+
+  .loaned-player-item {
+    padding: 0.8rem;
   }
 }
 
@@ -698,6 +822,10 @@ html,
 
   .summary-tiles {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .modal {
+    max-width: 90%;
   }
 }
 

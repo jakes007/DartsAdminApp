@@ -43,6 +43,23 @@ const ClubEdit = () => {
   const [viewTeamsModalOpen, setViewTeamsModalOpen] = useState(false);
   const [clubToView, setClubToView] = useState(null);
 
+  // Player edit/delete state
+  const [editingPlayer, setEditingPlayer] = useState(null);
+  const [deleteConfirmPlayer, setDeleteConfirmPlayer] = useState(null);
+  const [editPlayerForm, setEditPlayerForm] = useState({
+    name: "",
+    surname: "",
+    cellphone: "",
+    dsaNumber: "",
+    team: "",
+  });
+
+  // Loan management state
+  const [loanModalOpen, setLoanModalOpen] = useState(false);
+  const [playerToLoan, setPlayerToLoan] = useState(null);
+  const [loanDestination, setLoanDestination] = useState("");
+  const [loanedPlayersModalOpen, setLoanedPlayersModalOpen] = useState(false);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewClub({
@@ -55,6 +72,14 @@ const ClubEdit = () => {
     const { name, value } = e.target;
     setEditFormData({
       ...editFormData,
+      [name]: value,
+    });
+  };
+
+  const handlePlayerEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditPlayerForm({
+      ...editPlayerForm,
       [name]: value,
     });
   };
@@ -128,7 +153,8 @@ const ClubEdit = () => {
   // Team management functions
   const openAddTeamModal = (club) => {
     setCurrentClubForTeam(club);
-    setTeamsToAdd(club.teams || []);
+    setTeamsToAdd([]); // Clear the list when opening modal
+    setTeamForm({ name: "", division: "Premier" });
     setAddTeamModalOpen(true);
   };
 
@@ -164,6 +190,8 @@ const ClubEdit = () => {
         )
       );
       setAddTeamModalOpen(false);
+      setTeamForm({ name: "", division: "Premier" });
+      setTeamsToAdd([]); // Clear the teams to be registered list
     }
   };
 
@@ -175,7 +203,7 @@ const ClubEdit = () => {
     }
 
     setCurrentClubForPlayer(club);
-    setPlayersToAdd(club.players || []);
+    setPlayersToAdd([]); // Clear the list when opening modal
     setPlayerForm({
       name: "",
       surname: "",
@@ -196,7 +224,16 @@ const ClubEdit = () => {
 
   const addPlayerToList = () => {
     if (playerForm.name && playerForm.surname && playerForm.team) {
-      setPlayersToAdd([...playersToAdd, { ...playerForm, id: Date.now() }]);
+      setPlayersToAdd([
+        ...playersToAdd,
+        {
+          ...playerForm,
+          id: Date.now(),
+          onLoan: false,
+          originalTeam: playerForm.team,
+          loanedTo: null,
+        },
+      ]);
       setPlayerForm({
         name: "",
         surname: "",
@@ -221,6 +258,177 @@ const ClubEdit = () => {
         )
       );
       setAddPlayerModalOpen(false);
+      setPlayerForm({
+        name: "",
+        surname: "",
+        cellphone: "",
+        dsaNumber: "",
+        team: "",
+      });
+      setPlayersToAdd([]); // Clear the players to be registered list
+    }
+  };
+
+  // Player edit/delete functions
+  const openEditPlayerModal = (player) => {
+    setEditingPlayer(player);
+    setEditPlayerForm({
+      name: player.name,
+      surname: player.surname,
+      cellphone: player.cellphone || "",
+      dsaNumber: player.dsaNumber || "",
+      team: player.team,
+    });
+  };
+
+  const savePlayerEdit = () => {
+    if (editingPlayer && clubToView) {
+      const updatedPlayers = clubToView.players.map((player) =>
+        player.id === editingPlayer.id
+          ? {
+              ...editPlayerForm,
+              id: player.id,
+              onLoan: player.onLoan,
+              originalTeam: player.originalTeam,
+              loanedTo: player.loanedTo,
+            }
+          : player
+      );
+
+      setClubs(
+        clubs.map((club) =>
+          club.id === clubToView.id
+            ? { ...club, players: updatedPlayers }
+            : club
+        )
+      );
+      setClubToView({ ...clubToView, players: updatedPlayers });
+      setEditingPlayer(null);
+    }
+  };
+
+  const handleDeletePlayer = (playerId) => {
+    if (clubToView) {
+      const updatedPlayers = clubToView.players.filter(
+        (player) => player.id !== playerId
+      );
+      setClubs(
+        clubs.map((club) =>
+          club.id === clubToView.id
+            ? { ...club, players: updatedPlayers }
+            : club
+        )
+      );
+      setClubToView({ ...clubToView, players: updatedPlayers });
+      setDeleteConfirmPlayer(null);
+    }
+  };
+
+  // Loan management functions
+  const openLoanModal = (player) => {
+    setPlayerToLoan(player);
+    setLoanDestination("");
+    setLoanModalOpen(true);
+  };
+
+  const handleLoanPlayer = () => {
+    if (playerToLoan && loanDestination) {
+      // Find the destination club and team
+      const [destinationClubId, destinationTeam] = loanDestination.split("|");
+      const destinationClub = clubs.find(
+        (club) => club.id === parseInt(destinationClubId)
+      );
+
+      if (destinationClub) {
+        // Update the player to be on loan
+        const updatedPlayers = clubToView.players.map((player) =>
+          player.id === playerToLoan.id
+            ? {
+                ...player,
+                onLoan: true,
+                loanedTo: {
+                  clubId: destinationClub.id,
+                  clubName: destinationClub.name,
+                  team: destinationTeam,
+                },
+                team: destinationTeam,
+              }
+            : player
+        );
+
+        // Add the player to the destination club
+        const destinationClubUpdatedPlayers = [
+          ...destinationClub.players,
+          {
+            ...playerToLoan,
+            onLoan: true,
+            loanedFrom: {
+              clubId: clubToView.id,
+              clubName: clubToView.name,
+              team: playerToLoan.team,
+            },
+            team: destinationTeam,
+            originalTeam: playerToLoan.team,
+          },
+        ];
+
+        setClubs(
+          clubs.map((club) => {
+            if (club.id === clubToView.id) {
+              return { ...club, players: updatedPlayers };
+            } else if (club.id === destinationClub.id) {
+              return { ...club, players: destinationClubUpdatedPlayers };
+            }
+            return club;
+          })
+        );
+
+        setClubToView({ ...clubToView, players: updatedPlayers });
+        setLoanModalOpen(false);
+        setPlayerToLoan(null);
+        setLoanDestination("");
+      }
+    }
+  };
+
+  const handleReturnPlayer = (player) => {
+    if (player.onLoan && player.loanedFrom) {
+      // Find the original club
+      const originalClub = clubs.find(
+        (club) => club.id === player.loanedFrom.clubId
+      );
+
+      if (originalClub) {
+        // Remove player from current club (where they were loaned to)
+        const currentClubUpdatedPlayers = clubToView.players.filter(
+          (p) => p.id !== player.id
+        );
+
+        // Return player to original club and team
+        const originalClubUpdatedPlayers = [
+          ...originalClub.players.filter((p) => p.id !== player.id),
+          {
+            ...player,
+            onLoan: false,
+            loanedTo: null,
+            team: player.originalTeam,
+            loanedFrom: null,
+          },
+        ];
+
+        setClubs(
+          clubs.map((club) => {
+            if (club.id === clubToView.id) {
+              return { ...club, players: currentClubUpdatedPlayers };
+            } else if (club.id === originalClub.id) {
+              return { ...club, players: originalClubUpdatedPlayers };
+            }
+            return club;
+          })
+        );
+
+        setClubToView({ ...clubToView, players: currentClubUpdatedPlayers });
+      }
     }
   };
 
@@ -230,8 +438,24 @@ const ClubEdit = () => {
     setViewTeamsModalOpen(true);
   };
 
+  // Get all loaned players across all clubs
+  const getAllLoanedPlayers = () => {
+    return clubs.flatMap((club) =>
+      club.players
+        .filter((player) => player.onLoan)
+        .map((player) => ({ ...player, sourceClub: club.name }))
+    );
+  };
+
   // Sort clubs alphabetically by name
   const sortedClubs = [...clubs].sort((a, b) => a.name.localeCompare(b.name));
+
+  // Count loaned players
+  const loanedPlayersCount = clubs.reduce(
+    (total, club) =>
+      total + club.players.filter((player) => player.onLoan).length,
+    0
+  );
 
   return (
     <div className="club-edit-container">
@@ -321,9 +545,12 @@ const ClubEdit = () => {
               )}
             </p>
           </div>
-          <div className="summary-tile">
+          <div
+            className="summary-tile clickable"
+            onClick={() => setLoanedPlayersModalOpen(true)}
+          >
             <h3>Loaned</h3>
-            <p className="summary-count">0</p>
+            <p className="summary-count">{loanedPlayersCount}</p>
           </div>
         </div>
 
@@ -439,7 +666,7 @@ const ClubEdit = () => {
               </button>
             </div>
             <div className="modal-content">
-              <div className="modal-form">
+              <div className="modal-form compact-form">
                 <div className="form-group">
                   <label htmlFor="editClubName">Name Of Club</label>
                   <input
@@ -507,7 +734,7 @@ const ClubEdit = () => {
               </button>
             </div>
             <div className="modal-content">
-              <div className="modal-form">
+              <div className="modal-form compact-form">
                 <div className="form-group">
                   <label htmlFor="teamName">Team Name</label>
                   <input
@@ -594,7 +821,7 @@ const ClubEdit = () => {
               </button>
             </div>
             <div className="modal-content">
-              <div className="modal-form">
+              <div className="modal-form compact-form">
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="playerName">Name</label>
@@ -708,7 +935,7 @@ const ClubEdit = () => {
         <div className="modal-overlay">
           <div className="modal view-teams-modal">
             <div className="modal-header">
-              <h3>{clubToView?.name} - Teams</h3>
+              <h3>{clubToView?.name} - Teams & Players</h3>
               <button
                 className="modal-close"
                 onClick={() => setViewTeamsModalOpen(false)}
@@ -730,35 +957,87 @@ const ClubEdit = () => {
                     return (
                       <div key={division} className="division-group">
                         <h4>{division}</h4>
-                        <div className="teams-container">
-                          {divisionTeams.map((team) => (
-                            <div key={team.id} className="team-card">
-                              <span className="team-name">{team.name}</span>
-                              <button
-                                className="remove-item-btn"
-                                onClick={() => {
-                                  // Remove team logic
-                                  const updatedTeams = clubToView.teams.filter(
-                                    (t) => t.id !== team.id
-                                  );
-                                  setClubs(
-                                    clubs.map((club) =>
-                                      club.id === clubToView.id
-                                        ? { ...club, teams: updatedTeams }
-                                        : club
-                                    )
-                                  );
-                                  setClubToView({
-                                    ...clubToView,
-                                    teams: updatedTeams,
-                                  });
-                                }}
-                              >
-                                ×
-                              </button>
+                        {divisionTeams.map((team) => {
+                          const teamPlayers =
+                            clubToView?.players?.filter(
+                              (player) => player.team === team.name
+                            ) || [];
+
+                          return (
+                            <div key={team.id} className="team-section">
+                              <h5 className="team-subtitle">{team.name}</h5>
+                              {teamPlayers.length > 0 ? (
+                                <div className="players-container">
+                                  {teamPlayers.map((player) => (
+                                    <div
+                                      key={player.id}
+                                      className={`player-row ${
+                                        player.onLoan ? "on-loan" : ""
+                                      }`}
+                                    >
+                                      <div className="player-info">
+                                        {player.name} {player.surname}
+                                        {player.cellphone &&
+                                          ` • ${player.cellphone}`}
+                                        {player.dsaNumber &&
+                                          ` • DSA: ${player.dsaNumber}`}
+                                        {player.onLoan && player.loanedTo && (
+                                          <span className="loan-info">
+                                            {" "}
+                                            (Loaned to:{" "}
+                                            {player.loanedTo.clubName} -{" "}
+                                            {player.loanedTo.team})
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="player-actions">
+                                        <button
+                                          className="edit-player-btn"
+                                          onClick={() =>
+                                            openEditPlayerModal(player)
+                                          }
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          className="delete-player-btn"
+                                          onClick={() =>
+                                            setDeleteConfirmPlayer(player)
+                                          }
+                                        >
+                                          Delete
+                                        </button>
+                                        {!player.onLoan ? (
+                                          <button
+                                            className="loan-player-btn"
+                                            onClick={() =>
+                                              openLoanModal(player)
+                                            }
+                                          >
+                                            Loan
+                                          </button>
+                                        ) : (
+                                          <button
+                                            className="return-player-btn"
+                                            onClick={() =>
+                                              handleReturnPlayer(player)
+                                            }
+                                          >
+                                            Return
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="no-players">
+                                  No players registered for this team
+                                </p>
+                              )}
                             </div>
-                          ))}
-                        </div>
+                          );
+                        })}
                       </div>
                     );
                   }
@@ -769,6 +1048,275 @@ const ClubEdit = () => {
               <button
                 className="modal-btn modal-confirm"
                 onClick={() => setViewTeamsModalOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Player Modal */}
+      {editingPlayer && (
+        <div className="modal-overlay">
+          <div className="modal edit-player-modal">
+            <div className="modal-header">
+              <h3>Edit Player Details</h3>
+              <button
+                className="modal-close"
+                onClick={() => setEditingPlayer(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-content">
+              <div className="modal-form compact-form">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="editPlayerName">Name</label>
+                    <input
+                      type="text"
+                      id="editPlayerName"
+                      name="name"
+                      value={editPlayerForm.name}
+                      onChange={handlePlayerEditInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="editPlayerSurname">Surname</label>
+                    <input
+                      type="text"
+                      id="editPlayerSurname"
+                      name="surname"
+                      value={editPlayerForm.surname}
+                      onChange={handlePlayerEditInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="editPlayerCellphone">Cellphone</label>
+                    <input
+                      type="tel"
+                      id="editPlayerCellphone"
+                      name="cellphone"
+                      value={editPlayerForm.cellphone}
+                      onChange={handlePlayerEditInputChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="editPlayerDsaNumber">DSA Number</label>
+                    <input
+                      type="text"
+                      id="editPlayerDsaNumber"
+                      name="dsaNumber"
+                      value={editPlayerForm.dsaNumber}
+                      onChange={handlePlayerEditInputChange}
+                    />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="editPlayerTeam">Team</label>
+                  <select
+                    id="editPlayerTeam"
+                    name="team"
+                    value={editPlayerForm.team}
+                    onChange={handlePlayerEditInputChange}
+                  >
+                    {clubToView?.teams?.map((team) => (
+                      <option key={team.id} value={team.name}>
+                        {team.name} ({team.division})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button
+                className="modal-btn modal-cancel"
+                onClick={() => setEditingPlayer(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn modal-confirm"
+                onClick={savePlayerEdit}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Player Confirmation Modal */}
+      {deleteConfirmPlayer && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3>Confirm Delete</h3>
+              <button
+                className="modal-close"
+                onClick={() => setDeleteConfirmPlayer(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-content">
+              <p>
+                Are you sure you want to delete {deleteConfirmPlayer.name}{" "}
+                {deleteConfirmPlayer.surname}?
+              </p>
+              <p>This action cannot be undone.</p>
+            </div>
+            <div className="modal-actions">
+              <button
+                className="modal-btn modal-cancel"
+                onClick={() => setDeleteConfirmPlayer(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn modal-confirm"
+                onClick={() => handleDeletePlayer(deleteConfirmPlayer.id)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loan Player Modal */}
+      {loanModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal loan-modal">
+            <div className="modal-header">
+              <h3>
+                Loan Player: {playerToLoan?.name} {playerToLoan?.surname}
+              </h3>
+              <button
+                className="modal-close"
+                onClick={() => setLoanModalOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-content">
+              <div className="modal-form compact-form">
+                <div className="form-group">
+                  <label htmlFor="loanDestination">
+                    Select Destination Team
+                  </label>
+                  <select
+                    id="loanDestination"
+                    value={loanDestination}
+                    onChange={(e) => setLoanDestination(e.target.value)}
+                  >
+                    <option value="">Select a club and team</option>
+                    {clubs
+                      .filter((club) => club.id !== clubToView.id) // Exclude current club
+                      .flatMap((club) =>
+                        club.teams.map((team) => (
+                          <option
+                            key={`${club.id}-${team.name}`}
+                            value={`${club.id}|${team.name}`}
+                          >
+                            {club.name} - {team.name} ({team.division})
+                          </option>
+                        ))
+                      )}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button
+                className="modal-btn modal-cancel"
+                onClick={() => setLoanModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn modal-confirm"
+                onClick={handleLoanPlayer}
+                disabled={!loanDestination}
+              >
+                Loan Player
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loaned Players Modal */}
+      {loanedPlayersModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal loaned-players-modal">
+            <div className="modal-header">
+              <h3>Loaned Players</h3>
+              <button
+                className="modal-close"
+                onClick={() => setLoanedPlayersModalOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-content">
+              {getAllLoanedPlayers().length > 0 ? (
+                <div className="loaned-players-list">
+                  {getAllLoanedPlayers().map((player) => (
+                    <div key={player.id} className="loaned-player-item">
+                      <div className="loaned-player-info">
+                        <h4>
+                          {player.name} {player.surname}
+                        </h4>
+                        <p>
+                          From:{" "}
+                          {player.loanedFrom?.clubName || player.sourceClub} -{" "}
+                          {player.originalTeam}
+                        </p>
+                        <p>
+                          To: {player.loanedTo?.clubName} -{" "}
+                          {player.loanedTo?.team}
+                        </p>
+                        {player.cellphone && <p>Cell: {player.cellphone}</p>}
+                        {player.dsaNumber && <p>DSA: {player.dsaNumber}</p>}
+                      </div>
+                      <div className="loaned-player-actions">
+                        <button
+                          className="return-player-btn"
+                          onClick={() => {
+                            setLoanedPlayersModalOpen(false);
+                            // Find the club where the player is currently loaned to
+                            const currentClub = clubs.find(
+                              (club) => club.id === player.loanedTo.clubId
+                            );
+                            if (currentClub) {
+                              setClubToView(currentClub);
+                              setViewTeamsModalOpen(true);
+                            }
+                          }}
+                        >
+                          View Details
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="no-loaned-players">
+                  No players are currently on loan
+                </p>
+              )}
+            </div>
+            <div className="modal-actions">
+              <button
+                className="modal-btn modal-confirm"
+                onClick={() => setLoanedPlayersModalOpen(false)}
               >
                 Close
               </button>

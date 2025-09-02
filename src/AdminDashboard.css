@@ -1,13 +1,5 @@
+/* File: src/AdminDashboard.css */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap");
-
-/* Ensure the background covers the entire screen */
-body,
-html,
-#root {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-}
 
 .admin-container {
   min-height: 100vh;
@@ -68,10 +60,6 @@ html,
 .logout-btn:hover {
   background: rgba(255, 107, 107, 0.2);
   box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
-}
-
-.back-arrow {
-  display: none;
 }
 
 .logout-icon {
@@ -141,56 +129,44 @@ html,
   margin: 0;
 }
 
-/* Mobile adjustments - Show back arrow, hide text */
+/* Responsive Styles for Mobile */
 @media (max-width: 767px) {
   .admin-header {
     padding: 1rem;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem;
   }
 
   .admin-header h1 {
     font-size: 1.5rem;
+    grid-column: 2;
+    text-align: center;
   }
 
   .logout-btn {
-    right: 1rem;
+    grid-column: 3;
     padding: 0.7rem;
+    justify-self: end;
   }
 
   .logout-text {
     display: none;
   }
 
-  .back-arrow {
-    display: inline;
-    font-size: 1.3rem;
-    font-weight: bold;
+  .logout-icon {
+    display: block;
+    font-size: 1.5rem;
+    transform: rotate(90deg); /* Curved arrow for logout - matches ClubEdit */
   }
 
   .admin-main {
     padding: 2rem 1rem;
   }
+}
 
-  /* Layout for larger screens */
-  @media (min-width: 768px) {
-    .admin-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  /* Ensure the background covers the entire mobile screen */
-  .admin-container {
-    min-height: 100vh;
-    background: radial-gradient(
-        circle at 10% 20%,
-        rgba(25, 50, 80, 0.7) 0%,
-        transparent 30%
-      ),
-      radial-gradient(
-        circle at 90% 80%,
-        rgba(80, 25, 80, 0.7) 0%,
-        transparent 30%
-      ),
-      linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%) fixed;
-    background-size: cover;
+/* Layout for larger screens */
+@media (min-width: 768px) {
+  .admin-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
