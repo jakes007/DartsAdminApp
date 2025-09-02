@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600&family=Poppins:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap");
 
 .admin-container {
   min-height: 100vh;
@@ -14,15 +14,16 @@
     ),
     linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
   color: #e0e0e0;
-  font-family: "Poppins", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .admin-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 1.5rem 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
 }
 
 .admin-header h1 {
@@ -40,19 +41,28 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: "Poppins", sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 500;
   display: flex;
   align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .logout-btn:hover {
   background: rgba(255, 107, 107, 0.2);
-  box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
 }
 
-.logout-icon {
-  display: none;
+.back-arrow {
+  display: none; /* Hidden by default on desktop */
+}
+
+.logout-text {
+  display: inline;
 }
 
 .admin-main {
@@ -114,9 +124,18 @@
   line-height: 1.6;
   opacity: 0.8;
   margin: 0;
+  font-family: "Inter", sans-serif;
 }
 
-@media (max-width: 768px) {
+/* Show text on larger screens */
+@media (min-width: 768px) {
+  .admin-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Mobile adjustments - Show back arrow, hide text */
+@media (max-width: 767px) {
   .admin-header {
     padding: 1rem;
   }
@@ -125,26 +144,22 @@
     font-size: 1.5rem;
   }
 
-  .logout-text {
-    display: none;
-  }
-
-  .logout-icon {
-    display: block;
-    font-size: 1.2rem;
-  }
-
   .logout-btn {
+    right: 1rem;
     padding: 0.7rem;
+  }
+
+  .logout-text {
+    display: none; /* Hide text on mobile */
+  }
+
+  .back-arrow {
+    display: inline; /* Show arrow on mobile */
+    font-size: 1.3rem;
+    font-weight: bold;
   }
 
   .admin-main {
     padding: 2rem 1rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .admin-grid {
-    grid-template-columns: repeat(3, 1fr);
   }
 }

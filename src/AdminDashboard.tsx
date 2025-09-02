@@ -1,13 +1,21 @@
+import { useNavigate } from "react-router-dom";
 import "./AdminDashboard.css";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // For now, we'll just redirect to homepage
+    navigate("/");
+  };
+
   return (
     <div className="admin-container">
       <header className="admin-header">
         <h1>Admin</h1>
-        <button className="logout-btn">
+        <button className="logout-btn" onClick={handleLogout}>
           <span className="logout-text">Log Out</span>
-          <span className="logout-icon">⎋</span>
+          <span className="back-arrow">←</span>
         </button>
       </header>
 

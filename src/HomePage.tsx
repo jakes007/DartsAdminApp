@@ -5,7 +5,7 @@ const HomePage = () => {
   return (
     <div className="homepage-container">
       <header className="app-header">
-        <h1>Darts Administrator</h1>
+        <h1>OBSERVATORY DARTS ASSOCIATION</h1>
       </header>
 
       <main className="main-content">
