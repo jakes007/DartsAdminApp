@@ -30,14 +30,13 @@ html,
 
 /* Header Styles - Fixed Alignment */
 .club-edit-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   padding: 1.5rem 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(0, 0, 0, 0.3);
   margin-bottom: 2rem;
-  position: relative;
 }
 
 .club-edit-header h1 {
@@ -46,15 +45,20 @@ html,
   color: #00ffff;
   font-size: 2rem;
   text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  text-align: center;
+  grid-column: 2;
 }
 
-.header-left,
+.header-left {
+  display: flex;
+  justify-content: flex-start;
+  grid-column: 1;
+}
+
 .header-right {
   display: flex;
-  z-index: 1;
+  justify-content: flex-end;
+  grid-column: 3;
 }
 
 .back-btn,
@@ -141,8 +145,9 @@ html,
 }
 
 .form-group label {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.8rem;
   font-weight: 500;
+  text-align: center;
 }
 
 .form-group input {
@@ -280,6 +285,22 @@ html,
   opacity: 0.8;
 }
 
+.view-teams-link {
+  background: none;
+  border: none;
+  color: #00ffff;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  padding: 0;
+  display: block;
+}
+
+.view-teams-link:hover {
+  color: #00aaff;
+}
+
 .club-actions {
   display: flex;
   gap: 0.5rem;
@@ -295,12 +316,22 @@ html,
   transition: all 0.2s ease;
 }
 
+.action-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .edit-btn {
   background: rgba(0, 255, 255, 0.2);
   color: #00ffff;
 }
 
-.edit-btn:hover {
+.edit-btn:hover:not(.disabled) {
   background: rgba(0, 255, 255, 0.3);
 }
 
@@ -309,7 +340,7 @@ html,
   color: #ff6b6b;
 }
 
-.delete-btn:hover {
+.delete-btn:hover:not(.disabled) {
   background: rgba(255, 107, 107, 0.3);
 }
 
@@ -319,66 +350,176 @@ html,
   color: #e0e0e0;
 }
 
-.add-team-btn:hover,
-.add-player-btn:hover {
+.add-team-btn:hover:not(.disabled),
+.add-player-btn:hover:not(.disabled) {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Modal Styles */
+/* Enhanced Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 1rem;
 }
 
 .modal {
-  background: rgba(35, 35, 50, 0.95);
-  border-radius: 12px;
-  padding: 2rem;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 16px;
+  padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  max-width: 500px;
-  width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 200, 255, 0.2);
+  max-width: 600px;
+  width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  color: #e0e0e0;
 }
 
-.modal h3 {
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.modal-header h3 {
   font-family: "Orbitron", sans-serif;
   color: #00ffff;
-  margin-top: 0;
-  text-align: center;
+  margin: 0;
   text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
 }
 
-.modal p {
-  margin: 1rem 0;
-  text-align: center;
+.modal-close {
+  background: none;
+  border: none;
+  color: #ff6b6b;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 107, 107, 0.2);
+}
+
+.modal-content {
+  padding: 1.5rem;
 }
 
 .modal-form {
-  margin: 1.5rem 0;
+  margin-bottom: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.modal-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.modal-form .form-group label {
+  display: block;
+  margin-bottom: 0.8rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+.modal-form .form-group input,
+.modal-form .form-group select {
+  width: 100%;
+  padding: 0.8rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: white;
+  font-family: "Inter", sans-serif;
+  transition: all 0.3s ease;
+}
+
+.modal-form .form-group input:focus,
+.modal-form .form-group select:focus {
+  outline: none;
+  border-color: #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.teams-list,
+.players-list {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.teams-list h4,
+.players-list h4 {
+  margin-top: 0;
+  color: #00ffff;
+  font-family: "Orbitron", sans-serif;
+}
+
+.team-item,
+.player-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.remove-item-btn {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: none;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.remove-item-btn:hover {
+  background: rgba(255, 107, 107, 0.3);
 }
 
 .modal-actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 1rem;
-  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .modal-btn {
   padding: 0.7rem 1.5rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-family: "Inter", sans-serif;
   font-weight: 500;
   cursor: pointer;
@@ -396,49 +537,95 @@ html,
 }
 
 .modal-confirm {
-  background: rgba(255, 107, 107, 0.2);
-  color: #ff6b6b;
-  border: 1px solid #ff6b6b;
+  background: linear-gradient(135deg, #00ffff, #0088ff);
+  color: #0a0a0a;
+  border: none;
+  font-weight: 600;
 }
 
-.modal-confirm:hover {
-  background: rgba(255, 107, 107, 0.3);
-  box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+.modal-confirm:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 255, 255, 0.5);
 }
 
-/* For edit modal confirm button */
-.edit-modal .modal-confirm {
-  background: rgba(0, 255, 255, 0.2);
+.modal-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.add-another-btn {
+  background: rgba(0, 255, 255, 0.1);
   color: #00ffff;
   border: 1px solid #00ffff;
+  width: 100%;
 }
 
-.edit-modal .modal-confirm:hover {
-  background: rgba(0, 255, 255, 0.3);
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+.add-another-btn:hover {
+  background: rgba(0, 255, 255, 0.2);
+}
+
+/* View Teams Modal Specific Styles */
+.view-teams-modal .modal-content {
+  padding: 0;
+}
+
+.divisions-list {
+  padding: 1rem;
+}
+
+.division-group {
+  margin-bottom: 1.5rem;
+}
+
+.division-group h4 {
+  color: #00ffff;
+  font-family: "Orbitron", sans-serif;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.teams-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.5rem;
+}
+
+.team-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.team-name {
+  font-weight: 500;
 }
 
 /* Mobile Responsive Styles */
 @media (max-width: 767px) {
   .club-edit-header {
     padding: 1rem;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem;
   }
 
   .club-edit-header h1 {
     font-size: 1.5rem;
-    position: static;
-    transform: none;
-    order: 2;
-    flex: 1;
+    grid-column: 2;
     text-align: center;
   }
 
   .header-left {
-    order: 1;
+    grid-column: 1;
+    justify-content: flex-start;
   }
 
   .header-right {
-    order: 3;
+    grid-column: 3;
+    justify-content: flex-end;
   }
 
   .back-btn,
@@ -457,12 +644,9 @@ html,
     font-size: 1.3rem;
   }
 
-  .back-arrow {
-    transform: rotate(0deg);
-  }
-
   .logout-icon {
     font-size: 1.5rem;
+    transform: rotate(90deg); /* Curved arrow for logout */
   }
 
   .club-edit-main {
@@ -491,6 +675,19 @@ html,
   .action-btn {
     flex: 1;
     min-width: 120px;
+  }
+
+  .modal {
+    max-width: 100%;
+    margin: 1rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .teams-container {
+    grid-template-columns: 1fr;
   }
 }
 

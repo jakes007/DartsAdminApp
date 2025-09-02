@@ -1,4 +1,3 @@
-// File: src/ClubEdit.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ClubEdit.css";
@@ -19,6 +18,31 @@ const ClubEdit = () => {
     code: "",
   });
 
+  // Team management state
+  const [addTeamModalOpen, setAddTeamModalOpen] = useState(false);
+  const [currentClubForTeam, setCurrentClubForTeam] = useState(null);
+  const [teamForm, setTeamForm] = useState({
+    name: "",
+    division: "Premier",
+  });
+  const [teamsToAdd, setTeamsToAdd] = useState([]);
+
+  // Player management state
+  const [addPlayerModalOpen, setAddPlayerModalOpen] = useState(false);
+  const [currentClubForPlayer, setCurrentClubForPlayer] = useState(null);
+  const [playerForm, setPlayerForm] = useState({
+    name: "",
+    surname: "",
+    cellphone: "",
+    dsaNumber: "",
+    team: "",
+  });
+  const [playersToAdd, setPlayersToAdd] = useState([]);
+
+  // View teams state
+  const [viewTeamsModalOpen, setViewTeamsModalOpen] = useState(false);
+  const [clubToView, setClubToView] = useState(null);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewClub({
@@ -38,7 +62,15 @@ const ClubEdit = () => {
   const handleRegisterClub = (e) => {
     e.preventDefault();
     if (newClub.name && newClub.email && newClub.code) {
-      setClubs([...clubs, { ...newClub, id: Date.now() }]);
+      setClubs([
+        ...clubs,
+        {
+          ...newClub,
+          id: Date.now(),
+          teams: [],
+          players: [],
+        },
+      ]);
       setNewClub({ name: "", email: "", code: "" });
     }
   };
@@ -57,7 +89,14 @@ const ClubEdit = () => {
     ) {
       setClubs(
         clubs.map((club) =>
-          club.id === editingClub.id ? { ...editFormData, id: club.id } : club
+          club.id === editingClub.id
+            ? {
+                ...editFormData,
+                id: club.id,
+                teams: club.teams,
+                players: club.players,
+              }
+            : club
         )
       );
       setEditingClub(null);
@@ -84,6 +123,111 @@ const ClubEdit = () => {
 
   const openDeleteModal = (club) => {
     setDeleteConfirmClub(club);
+  };
+
+  // Team management functions
+  const openAddTeamModal = (club) => {
+    setCurrentClubForTeam(club);
+    setTeamsToAdd(club.teams || []);
+    setAddTeamModalOpen(true);
+  };
+
+  const handleTeamInputChange = (e) => {
+    const { name, value } = e.target;
+    setTeamForm({
+      ...teamForm,
+      [name]: value,
+    });
+  };
+
+  const addTeamToList = () => {
+    if (
+      teamForm.name &&
+      !teamsToAdd.some((team) => team.name === teamForm.name)
+    ) {
+      setTeamsToAdd([...teamsToAdd, { ...teamForm, id: Date.now() }]);
+      setTeamForm({ name: "", division: "Premier" });
+    }
+  };
+
+  const removeTeamFromList = (id) => {
+    setTeamsToAdd(teamsToAdd.filter((team) => team.id !== id));
+  };
+
+  const saveTeams = () => {
+    if (currentClubForTeam) {
+      setClubs(
+        clubs.map((club) =>
+          club.id === currentClubForTeam.id
+            ? { ...club, teams: teamsToAdd }
+            : club
+        )
+      );
+      setAddTeamModalOpen(false);
+    }
+  };
+
+  // Player management functions
+  const openAddPlayerModal = (club) => {
+    if (!club.teams || club.teams.length === 0) {
+      alert("Please add at least one team before adding players.");
+      return;
+    }
+
+    setCurrentClubForPlayer(club);
+    setPlayersToAdd(club.players || []);
+    setPlayerForm({
+      name: "",
+      surname: "",
+      cellphone: "",
+      dsaNumber: "",
+      team: club.teams[0]?.name || "",
+    });
+    setAddPlayerModalOpen(true);
+  };
+
+  const handlePlayerInputChange = (e) => {
+    const { name, value } = e.target;
+    setPlayerForm({
+      ...playerForm,
+      [name]: value,
+    });
+  };
+
+  const addPlayerToList = () => {
+    if (playerForm.name && playerForm.surname && playerForm.team) {
+      setPlayersToAdd([...playersToAdd, { ...playerForm, id: Date.now() }]);
+      setPlayerForm({
+        name: "",
+        surname: "",
+        cellphone: "",
+        dsaNumber: "",
+        team: currentClubForPlayer.teams[0]?.name || "",
+      });
+    }
+  };
+
+  const removePlayerFromList = (id) => {
+    setPlayersToAdd(playersToAdd.filter((player) => player.id !== id));
+  };
+
+  const savePlayers = () => {
+    if (currentClubForPlayer) {
+      setClubs(
+        clubs.map((club) =>
+          club.id === currentClubForPlayer.id
+            ? { ...club, players: playersToAdd }
+            : club
+        )
+      );
+      setAddPlayerModalOpen(false);
+    }
+  };
+
+  // View teams functions
+  const openViewTeamsModal = (club) => {
+    setClubToView(club);
+    setViewTeamsModalOpen(true);
   };
 
   // Sort clubs alphabetically by name
@@ -161,11 +305,21 @@ const ClubEdit = () => {
           </div>
           <div className="summary-tile">
             <h3>Teams</h3>
-            <p className="summary-count">0</p>
+            <p className="summary-count">
+              {clubs.reduce(
+                (total, club) => total + (club.teams?.length || 0),
+                0
+              )}
+            </p>
           </div>
           <div className="summary-tile">
             <h3>Players</h3>
-            <p className="summary-count">0</p>
+            <p className="summary-count">
+              {clubs.reduce(
+                (total, club) => total + (club.players?.length || 0),
+                0
+              )}
+            </p>
           </div>
           <div className="summary-tile">
             <h3>Loaned</h3>
@@ -187,6 +341,14 @@ const ClubEdit = () => {
                     <p>
                       {club.email} | Code: {club.code}
                     </p>
+                    {club.teams && club.teams.length > 0 && (
+                      <button
+                        className="view-teams-link"
+                        onClick={() => openViewTeamsModal(club)}
+                      >
+                        View Teams ({club.teams.length})
+                      </button>
+                    )}
                   </div>
                   <div className="club-actions">
                     <button
@@ -201,10 +363,23 @@ const ClubEdit = () => {
                     >
                       Delete
                     </button>
-                    <button className="action-btn add-team-btn">
+                    <button
+                      className="action-btn add-team-btn"
+                      onClick={() => openAddTeamModal(club)}
+                    >
                       Add Team
                     </button>
-                    <button className="action-btn add-player-btn">
+                    <button
+                      className={`action-btn add-player-btn ${
+                        !club.teams || club.teams.length === 0 ? "disabled" : ""
+                      }`}
+                      onClick={() => openAddPlayerModal(club)}
+                      title={
+                        !club.teams || club.teams.length === 0
+                          ? "Please add a team first"
+                          : "Add Player"
+                      }
+                    >
                       Add Player
                     </button>
                   </div>
@@ -219,9 +394,19 @@ const ClubEdit = () => {
       {deleteConfirmClub && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Confirm Delete</h3>
-            <p>Are you sure you want to delete {deleteConfirmClub.name}?</p>
-            <p>This action cannot be undone.</p>
+            <div className="modal-header">
+              <h3>Confirm Delete</h3>
+              <button
+                className="modal-close"
+                onClick={() => setDeleteConfirmClub(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-content">
+              <p>Are you sure you want to delete {deleteConfirmClub.name}?</p>
+              <p>This action cannot be undone.</p>
+            </div>
             <div className="modal-actions">
               <button
                 className="modal-btn modal-cancel"
@@ -243,41 +428,51 @@ const ClubEdit = () => {
       {/* Edit Club Modal */}
       {editingClub && (
         <div className="modal-overlay">
-          <div className="modal">
-            <h3>Edit Club</h3>
-            <div className="modal-form">
-              <div className="form-group">
-                <label htmlFor="editClubName">Name Of Club</label>
-                <input
-                  type="text"
-                  id="editClubName"
-                  name="name"
-                  value={editFormData.name}
-                  onChange={handleEditInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="editClubEmail">Email Address</label>
-                <input
-                  type="email"
-                  id="editClubEmail"
-                  name="email"
-                  value={editFormData.email}
-                  onChange={handleEditInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="editClubCode">Unique Club Code</label>
-                <input
-                  type="text"
-                  id="editClubCode"
-                  name="code"
-                  value={editFormData.code}
-                  onChange={handleEditInputChange}
-                  required
-                />
+          <div className="modal edit-modal">
+            <div className="modal-header">
+              <h3>Edit Club Details</h3>
+              <button
+                className="modal-close"
+                onClick={() => setEditingClub(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-content">
+              <div className="modal-form">
+                <div className="form-group">
+                  <label htmlFor="editClubName">Name Of Club</label>
+                  <input
+                    type="text"
+                    id="editClubName"
+                    name="name"
+                    value={editFormData.name}
+                    onChange={handleEditInputChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="editClubEmail">Email Address</label>
+                  <input
+                    type="email"
+                    id="editClubEmail"
+                    name="email"
+                    value={editFormData.email}
+                    onChange={handleEditInputChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="editClubCode">Unique Club Code</label>
+                  <input
+                    type="text"
+                    id="editClubCode"
+                    name="code"
+                    value={editFormData.code}
+                    onChange={handleEditInputChange}
+                    required
+                  />
+                </div>
               </div>
             </div>
             <div className="modal-actions">
@@ -292,6 +487,290 @@ const ClubEdit = () => {
                 onClick={handleEditClub}
               >
                 Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Team Modal */}
+      {addTeamModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal team-modal">
+            <div className="modal-header">
+              <h3>Add Teams to {currentClubForTeam?.name}</h3>
+              <button
+                className="modal-close"
+                onClick={() => setAddTeamModalOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-content">
+              <div className="modal-form">
+                <div className="form-group">
+                  <label htmlFor="teamName">Team Name</label>
+                  <input
+                    type="text"
+                    id="teamName"
+                    name="name"
+                    value={teamForm.name}
+                    onChange={handleTeamInputChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="teamDivision">Division</label>
+                  <select
+                    id="teamDivision"
+                    name="division"
+                    value={teamForm.division}
+                    onChange={handleTeamInputChange}
+                  >
+                    <option value="Premier">Premier</option>
+                    <option value="1st Div.">1st Div.</option>
+                    <option value="2nd Div.">2nd Div.</option>
+                    <option value="3rd Div.">3rd Div.</option>
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  className="modal-btn add-another-btn"
+                  onClick={addTeamToList}
+                >
+                  Add Team to List
+                </button>
+              </div>
+
+              {teamsToAdd.length > 0 && (
+                <div className="teams-list">
+                  <h4>Teams to be registered:</h4>
+                  {teamsToAdd.map((team) => (
+                    <div key={team.id} className="team-item">
+                      <span>
+                        {team.name} ({team.division})
+                      </span>
+                      <button
+                        className="remove-item-btn"
+                        onClick={() => removeTeamFromList(team.id)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="modal-actions">
+              <button
+                className="modal-btn modal-cancel"
+                onClick={() => setAddTeamModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn modal-confirm"
+                onClick={saveTeams}
+                disabled={teamsToAdd.length === 0}
+              >
+                Register Teams
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Player Modal */}
+      {addPlayerModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal player-modal">
+            <div className="modal-header">
+              <h3>Add Players to {currentClubForPlayer?.name}</h3>
+              <button
+                className="modal-close"
+                onClick={() => setAddPlayerModalOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-content">
+              <div className="modal-form">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="playerName">Name</label>
+                    <input
+                      type="text"
+                      id="playerName"
+                      name="name"
+                      value={playerForm.name}
+                      onChange={handlePlayerInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="playerSurname">Surname</label>
+                    <input
+                      type="text"
+                      id="playerSurname"
+                      name="surname"
+                      value={playerForm.surname}
+                      onChange={handlePlayerInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="playerCellphone">Cellphone</label>
+                    <input
+                      type="tel"
+                      id="playerCellphone"
+                      name="cellphone"
+                      value={playerForm.cellphone}
+                      onChange={handlePlayerInputChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="playerDsaNumber">DSA Number</label>
+                    <input
+                      type="text"
+                      id="playerDsaNumber"
+                      name="dsaNumber"
+                      value={playerForm.dsaNumber}
+                      onChange={handlePlayerInputChange}
+                    />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="playerTeam">Team</label>
+                  <select
+                    id="playerTeam"
+                    name="team"
+                    value={playerForm.team}
+                    onChange={handlePlayerInputChange}
+                  >
+                    {currentClubForPlayer?.teams?.map((team) => (
+                      <option key={team.id} value={team.name}>
+                        {team.name} ({team.division})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  className="modal-btn add-another-btn"
+                  onClick={addPlayerToList}
+                >
+                  Add Player to List
+                </button>
+              </div>
+
+              {playersToAdd.length > 0 && (
+                <div className="players-list">
+                  <h4>Players to be registered:</h4>
+                  {playersToAdd.map((player) => (
+                    <div key={player.id} className="player-item">
+                      <span>
+                        {player.name} {player.surname} - {player.team}
+                      </span>
+                      <button
+                        className="remove-item-btn"
+                        onClick={() => removePlayerFromList(player.id)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="modal-actions">
+              <button
+                className="modal-btn modal-cancel"
+                onClick={() => setAddPlayerModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn modal-confirm"
+                onClick={savePlayers}
+                disabled={playersToAdd.length === 0}
+              >
+                Register Players
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Teams Modal */}
+      {viewTeamsModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal view-teams-modal">
+            <div className="modal-header">
+              <h3>{clubToView?.name} - Teams</h3>
+              <button
+                className="modal-close"
+                onClick={() => setViewTeamsModalOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-content">
+              <div className="divisions-list">
+                {["Premier", "1st Div.", "2nd Div.", "3rd Div."].map(
+                  (division) => {
+                    const divisionTeams =
+                      clubToView?.teams?.filter(
+                        (team) => team.division === division
+                      ) || [];
+
+                    if (divisionTeams.length === 0) return null;
+
+                    return (
+                      <div key={division} className="division-group">
+                        <h4>{division}</h4>
+                        <div className="teams-container">
+                          {divisionTeams.map((team) => (
+                            <div key={team.id} className="team-card">
+                              <span className="team-name">{team.name}</span>
+                              <button
+                                className="remove-item-btn"
+                                onClick={() => {
+                                  // Remove team logic
+                                  const updatedTeams = clubToView.teams.filter(
+                                    (t) => t.id !== team.id
+                                  );
+                                  setClubs(
+                                    clubs.map((club) =>
+                                      club.id === clubToView.id
+                                        ? { ...club, teams: updatedTeams }
+                                        : club
+                                    )
+                                  );
+                                  setClubToView({
+                                    ...clubToView,
+                                    teams: updatedTeams,
+                                  });
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                )}
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button
+                className="modal-btn modal-confirm"
+                onClick={() => setViewTeamsModalOpen(false)}
+              >
+                Close
               </button>
             </div>
           </div>
