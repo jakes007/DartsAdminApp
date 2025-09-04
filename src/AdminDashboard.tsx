@@ -19,8 +19,7 @@ const AdminDashboard = () => {
   };
 
   const handleSetupClick = () => {
-    // Placeholder for setup functionality
-    console.log("Setup clicked");
+    navigate("/setup"); // Changed to navigate to setup page
   };
 
   return (
