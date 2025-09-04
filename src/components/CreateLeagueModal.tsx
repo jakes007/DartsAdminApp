@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface Team {
   id: string;
@@ -28,6 +28,9 @@ const CreateLeagueModal = ({
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showTeamDropdown, setShowTeamDropdown] = useState(false);
+
+  const teamDropdownRef = useRef<HTMLDivElement>(null);
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -39,6 +42,23 @@ const CreateLeagueModal = ({
       setCurrentYear(new Date().getFullYear());
     }
   }, [isOpen]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        teamDropdownRef.current &&
+        !teamDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowTeamDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -76,12 +96,16 @@ const CreateLeagueModal = ({
     setShowCalendar(false);
   };
 
-  const handleTeamToggle = (teamId: string) => {
+  const handleTeamSelect = (teamId: string) => {
     setSelectedTeams((prev) =>
       prev.includes(teamId)
         ? prev.filter((id) => id !== teamId)
         : [...prev, teamId]
     );
+  };
+
+  const handleTeamDropdownToggle = () => {
+    setShowTeamDropdown(!showTeamDropdown);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -159,7 +183,12 @@ const CreateLeagueModal = ({
   return (
     <div className="modal-overlay">
       <div className="modal create-league-modal">
-        {/* ... existing modal header ... */}
+        <div className="modal-header">
+          <h3>Create League</h3>
+          <button className="modal-close" onClick={onClose}>
+            ×
+          </button>
+        </div>
 
         <div className="modal-content">
           <form onSubmit={handleSubmit} className="modal-form compact-form">
@@ -249,28 +278,51 @@ const CreateLeagueModal = ({
               )}
             </div>
 
-            {/* Team Selection */}
-            <div className="form-group">
+            {/* Team Selection - Updated to dropdown */}
+            <div
+              className="form-group team-selection-group"
+              ref={teamDropdownRef}
+            >
               <label>Select Teams *</label>
-              <div className="teams-list-container">
-                {teams.length === 0 ? (
-                  <p className="no-teams-message">
-                    No teams available. Please create teams first.
-                  </p>
-                ) : (
-                  teams.map((team) => (
-                    <div key={team.id} className="team-checkbox">
-                      <input
-                        type="checkbox"
-                        id={`team-${team.id}`}
-                        checked={selectedTeams.includes(team.id)}
-                        onChange={() => handleTeamToggle(team.id)}
-                      />
-                      <label htmlFor={`team-${team.id}`}>{team.name}</label>
+              <button
+                type="button"
+                className="team-dropdown-toggle"
+                onClick={handleTeamDropdownToggle}
+              >
+                {selectedTeams.length > 0
+                  ? `${selectedTeams.length} team${
+                      selectedTeams.length !== 1 ? "s" : ""
+                    } selected`
+                  : "Select teams"}
+                <span className="dropdown-arrow">▼</span>
+              </button>
+
+              {showTeamDropdown && (
+                <div className="team-dropdown">
+                  {teams.length === 0 ? (
+                    <div className="no-teams-message">
+                      No teams available. Please create teams first.
                     </div>
-                  ))
-                )}
-              </div>
+                  ) : (
+                    teams.map((team) => (
+                      <div
+                        key={team.id}
+                        className={`team-dropdown-item ${
+                          selectedTeams.includes(team.id) ? "selected" : ""
+                        }`}
+                        onClick={() => handleTeamSelect(team.id)}
+                      >
+                        <span className="team-checkbox">
+                          {selectedTeams.includes(team.id) && (
+                            <span className="checkmark">✓</span>
+                          )}
+                        </span>
+                        <span className="team-name">{team.name}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Selected Teams List */}
@@ -285,7 +337,7 @@ const CreateLeagueModal = ({
                         <span>{team?.name}</span>
                         <button
                           type="button"
-                          onClick={() => handleTeamToggle(teamId)}
+                          onClick={() => handleTeamSelect(teamId)}
                           className="remove-team-button"
                         >
                           Remove
