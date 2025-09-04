@@ -183,6 +183,7 @@
   padding: 1.5rem;
   margin-bottom: 1rem;
   border-left: 4px solid #ffff00;
+  position: relative;
 }
 
 .competition-header {
@@ -239,6 +240,71 @@
 
 .detail-value {
   font-weight: 600;
+}
+
+/* Competition Actions */
+.competition-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.edit-competition-btn {
+  background: rgba(0, 255, 255, 0.2);
+  color: #00ffff;
+  border: 1px solid #00ffff;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.edit-competition-btn:hover {
+  background: rgba(0, 255, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+/* Edit Competition Modal Styles */
+.edit-competition-modal {
+  max-width: 600px;
+}
+
+.edit-competition-modal .modal-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.edit-competition-modal .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-competition-modal .form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.edit-competition-modal input,
+.edit-competition-modal select {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.8rem;
+  color: #e0e0e0;
+  font-family: "Inter", sans-serif;
+  transition: all 0.3s ease;
+}
+
+.edit-competition-modal input:focus,
+.edit-competition-modal select:focus {
+  outline: none;
+  border-color: #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
 }
 
 /* Create League Modal Styles */
@@ -376,6 +442,10 @@
 }
 
 /* Team Dropdown Styles */
+.team-selection-group {
+  position: relative;
+}
+
 .team-dropdown-toggle {
   width: 100%;
   padding: 0.8rem;
@@ -387,7 +457,6 @@
   text-align: left;
   cursor: pointer;
   transition: all 0.3s ease;
-  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -413,14 +482,14 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
   margin-top: 0.25rem;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 10;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .team-dropdown-item {
@@ -429,6 +498,11 @@
   padding: 0.8rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-dropdown-item:last-child {
+  border-bottom: none;
 }
 
 .team-dropdown-item:hover {
@@ -471,8 +545,8 @@
   text-align: center;
   opacity: 0.7;
   font-style: italic;
-  margin: 0;
   padding: 1rem;
+  margin: 0;
 }
 
 .selected-teams-section {
@@ -551,6 +625,75 @@ select:focus {
   background: rgba(0, 0, 0, 0.5) !important;
   color: #e0e0e0 !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Competition Actions */
+.competition-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.edit-competition-btn {
+  background: rgba(0, 255, 255, 0.2);
+  color: #00ffff;
+  border: 1px solid #00ffff;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.edit-competition-btn:hover {
+  background: rgba(0, 255, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.delete-competition-btn {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.delete-competition-btn:hover {
+  background: rgba(255, 107, 107, 0.3);
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+}
+
+/* Delete Confirmation Modal */
+.delete-confirm-modal {
+  max-width: 500px;
+}
+
+.delete-confirm-modal .modal-content {
+  text-align: center;
+}
+
+.delete-confirm-modal p {
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.modal-delete {
+  background: linear-gradient(135deg, #ff6b6b, #ff4757) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.modal-delete:hover {
+  background: linear-gradient(135deg, #ff4757, #ff3838) !important;
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.5) !important;
 }
 
 /* Ensure all form inputs have consistent styling */
@@ -681,114 +824,26 @@ select:focus {
   select {
     padding: 0.7rem;
   }
-}
 
-/* Team Dropdown Styles */
-.team-selection-group {
-  position: relative;
-}
+  /* Competition Actions on Mobile */
+  .competition-actions {
+    justify-content: center;
+  }
 
-.team-dropdown-toggle {
-  width: 100%;
-  padding: 0.8rem;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  color: #e0e0e0;
-  font-family: "Inter", sans-serif;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  .edit-competition-btn {
+    width: 100%;
+    padding: 0.7rem;
+  }
 
-.team-dropdown-toggle:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-}
+  /* Edit modal on mobile */
+  .edit-competition-modal {
+    max-width: 95%;
+    margin: 0.5rem;
+  }
 
-.team-dropdown-toggle:focus {
-  outline: none;
-  border-color: #00ffff;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-}
-
-.dropdown-arrow {
-  color: #00ffff;
-  font-size: 0.8rem;
-}
-
-.team-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  margin-top: 0.25rem;
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 1000;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-}
-
-.team-dropdown-item {
-  display: flex;
-  align-items: center;
-  padding: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.team-dropdown-item:last-child {
-  border-bottom: none;
-}
-
-.team-dropdown-item:hover {
-  background: rgba(0, 255, 255, 0.1);
-}
-
-.team-dropdown-item.selected {
-  background: rgba(0, 255, 255, 0.2);
-}
-
-.team-checkbox {
-  width: 18px;
-  height: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-  margin-right: 0.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
-  flex-shrink: 0;
-}
-
-.team-dropdown-item.selected .team-checkbox {
-  background: rgba(0, 255, 255, 0.3);
-  border-color: #00ffff;
-}
-
-.checkmark {
-  color: #00ffff;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.team-name {
-  color: #e0e0e0;
-}
-
-.no-teams-message {
-  text-align: center;
-  opacity: 0.7;
-  font-style: italic;
-  padding: 1rem;
-  margin: 0;
+  .edit-competition-modal .modal-form {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {
@@ -798,6 +853,20 @@ select:focus {
 
   .competition-details {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile responsive adjustments for delete button */
+@media (max-width: 767px) {
+  .competition-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .edit-competition-btn,
+  .delete-competition-btn {
+    width: 100%;
+    padding: 0.7rem;
   }
 }
 
@@ -817,16 +886,5 @@ select:focus {
       ),
       linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%) fixed;
     background-size: cover;
-  }
-}
-
-/* Mobile responsive adjustments */
-@media (max-width: 767px) {
-  .team-dropdown {
-    max-height: 150px;
-  }
-
-  .team-dropdown-item {
-    padding: 0.6rem;
   }
 }
