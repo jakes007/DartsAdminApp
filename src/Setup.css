@@ -628,6 +628,26 @@ select:focus {
 }
 
 /* Competition Actions */
+.view-competition-btn {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.view-competition-btn:hover {
+  background: rgba(0, 255, 0, 0.3);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+/* Update competition-actions to handle the new button */
 .competition-actions {
   display: flex;
   justify-content: flex-end;
@@ -635,6 +655,7 @@ select:focus {
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
 }
 
 .edit-competition-btn {
@@ -867,6 +888,20 @@ select:focus {
   .delete-competition-btn {
     width: 100%;
     padding: 0.7rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .competition-actions {
+    justify-content: center;
+  }
+
+  .edit-competition-btn,
+  .delete-competition-btn,
+  .view-competition-btn {
+    width: 100%;
+    padding: 0.7rem;
+    margin-bottom: 0.5rem;
   }
 }
 

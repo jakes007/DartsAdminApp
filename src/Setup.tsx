@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateLeagueModal from "./components/CreateLeagueModal";
 import "./Setup.css";
+import { Link } from "react-router-dom";
 
 // Define the Competition type
 interface Competition {
@@ -246,6 +247,13 @@ const Setup = () => {
                     >
                       Delete
                     </button>
+                    <Link
+                      to={`/competition/${competition.id}`}
+                      state={{ competitionName: competition.name }}
+                      className="view-competition-btn"
+                    >
+                      View League
+                    </Link>
                   </div>
                 </div>
               ))}
