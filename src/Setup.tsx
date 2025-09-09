@@ -15,6 +15,18 @@ interface Competition {
   division?: string;
 }
 
+const competitionStatsConfig = [
+  { key: "playerName", label: "PN", description: "Player Name" },
+  { key: "matchesPlayed", label: "MP", description: "Matches Played" },
+  { key: "legsWon", label: "LW", description: "Legs Won" },
+  { key: "legsLost", label: "LL", description: "Legs Lost" },
+  { key: "tons", label: "100+", description: "Scores of 100+" },
+  { key: "ton80s", label: "180", description: "Scores of 180" },
+  { key: "dartsUsed", label: "DU", description: "Darts Used" },
+  { key: "winPercentage", label: "Win%", description: "Win Percentage" },
+  { key: "average", label: "Avg", description: "3-Dart Average" },
+];
+
 // This would typically come from your data store
 const mockTeams = [
   { id: "1", name: "Team Alpha" },
@@ -249,7 +261,11 @@ const Setup = () => {
                     </button>
                     <Link
                       to={`/competition/${competition.id}`}
-                      state={{ competitionName: competition.name }}
+                      state={{
+                        competitionName: competition.name,
+                        // This would come from your competition data
+                        statsConfig: competitionStatsConfig,
+                      }}
                       className="view-competition-btn"
                     >
                       View League
