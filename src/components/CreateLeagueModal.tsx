@@ -6,6 +6,8 @@ interface Team {
   id: string;
   name: string;
   division: string;
+  clubId: string;
+  clubName: string;
 }
 
 interface CreateLeagueModalProps {
@@ -33,10 +35,15 @@ const CreateLeagueModal = ({
   const [teams, setTeams] = useState<Team[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [availableTeams, setAvailableTeams] = useState<Team[]>([]);
+  const [availableTeams, setAvailableTeams] = useState<
+    { id: string; name: string; division: string; clubName: string }[]
+  >([]);
+  const [selectedDivision, setSelectedDivision] = useState("");
+  const [leagueTeamForm, setLeagueTeamForm] = useState({ team: "" });
 
   const teamDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Fetch teams from Firestore - all teams
   // Fetch teams from Firestore - all teams
   useEffect(() => {
     if (!isOpen) return;
@@ -46,28 +53,26 @@ const CreateLeagueModal = ({
 
     try {
       const unsubscribe = onSnapshot(
-        collection(db, "clubs"),
-        (clubsSnapshot) => {
+        collection(db, "teams"),
+        (teamsSnapshot) => {
           const allTeams: Team[] = [];
 
-          clubsSnapshot.forEach((clubDoc) => {
-            const clubData = clubDoc.data();
-            if (clubData.teams && Array.isArray(clubData.teams)) {
-              clubData.teams.forEach((team: Team) => {
-                allTeams.push({
-                  id: team.id,
-                  name: team.name,
-                  division: team.division || "Unknown Division",
-                });
-              });
-            }
+          teamsSnapshot.forEach((teamDoc) => {
+            const teamData = teamDoc.data();
+            allTeams.push({
+              id: teamDoc.id,
+              name: teamData.name || "",
+              division: (teamData.division || "Unknown Division").trim(),
+              clubId: teamData.clubId || "",
+              clubName: "Unknown Club", // We'll need to fetch this separately
+            });
           });
 
           setTeams(allTeams);
           setLoadingTeams(false);
         },
         (err) => {
-          console.error("Error fetching clubs:", err);
+          console.error("Error fetching teams:", err);
           setError("Failed to load teams. Please try again.");
           setLoadingTeams(false);
         }
@@ -112,6 +117,23 @@ const CreateLeagueModal = ({
     };
   }, []);
 
+  // --- Step 3: Update available teams whenever teams or division changes ---
+  // Update available teams whenever teams or division changes
+  useEffect(() => {
+    if (!division) {
+      setAvailableTeams([]);
+      return;
+    }
+
+    const filtered = teams.filter(
+      (team) =>
+        team.division &&
+        team.division.trim().toLowerCase() === division.trim().toLowerCase()
+    );
+
+    setAvailableTeams(filtered);
+  }, [teams, division]);
+
   if (!isOpen) return null;
 
   // Calendar functions
@@ -148,13 +170,9 @@ const CreateLeagueModal = ({
 
   // --- NEW: handle division change ---
   const handleDivisionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected = e.target.value;
+    const selected = e.target.value.trim();
     setDivision(selected);
-
-    // Filter teams based on selected division
-    const filtered = teams.filter((team) => team.division === selected);
-    setAvailableTeams(filtered);
-    setSelectedTeams([]); // reset any previously selected teams
+    setSelectedTeams([]);
   };
 
   const handleTeamSelect = (teamId: string) => {

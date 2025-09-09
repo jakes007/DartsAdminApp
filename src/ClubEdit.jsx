@@ -7,9 +7,11 @@ import {
   deleteDoc,
   doc,
   onSnapshot,
-  arrayUnion,
-  arrayRemove,
   setDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import "./ClubEdit.css";
@@ -115,14 +117,19 @@ const ClubEdit = () => {
     e.preventDefault();
     if (newClub.name && newClub.email && newClub.code) {
       try {
-        await addDoc(collection(db, "clubs"), {
+        // Create a new club document in 'clubs' collection
+        const docRef = await addDoc(collection(db, "clubs"), {
           name: newClub.name,
           email: newClub.email,
           code: newClub.code,
-          teams: [],
-          players: [],
-          createdAt: new Date(),
+          createdAt: serverTimestamp(),
         });
+
+        // Optionally, you can store the auto-generated ID as clubId
+        await updateDoc(doc(db, "clubs", docRef.id), {
+          clubId: docRef.id,
+        });
+
         setNewClub({ name: "", email: "", code: "" });
       } catch (error) {
         console.error("Error adding club: ", error);
@@ -222,56 +229,48 @@ const ClubEdit = () => {
 
   // Save teams
   const saveTeams = async () => {
-    if (currentClubForTeam && teamsToAdd.length > 0) {
-      try {
-        const clubRef = doc(db, "clubs", currentClubForTeam.id);
+    if (!currentClubForTeam || teamsToAdd.length === 0) return;
 
-        for (const team of teamsToAdd) {
-          // Add to subcollection
-          const teamRef = await addDoc(
-            collection(db, "clubs", currentClubForTeam.id, "teams"),
-            {
-              name: team.name,
-              division: team.division,
-              createdAt: new Date(),
-            }
-          );
+    try {
+      const updatedTeams = [];
 
-          // Add to top-level teams collection
-          await setDoc(doc(db, "teams", teamRef.id), {
-            name: team.name,
-            division: team.division,
-            clubId: currentClubForTeam.id,
-            createdAt: new Date(),
-          });
+      for (const team of teamsToAdd) {
+        // Add to top-level teams collection
+        const teamRef = await addDoc(collection(db, "teams"), {
+          name: team.name,
+          division: team.division,
+          clubId: currentClubForTeam.id,
+          createdAt: new Date(),
+        });
 
-          // Add to the parent club's `teams` array
-          await updateDoc(clubRef, {
-            teams: arrayUnion({
-              id: teamRef.id,
-              name: team.name,
-              division: team.division,
-            }),
-          });
-        }
-
-        setAddTeamModalOpen(false);
-        setTeamsToAdd([]);
-        setTeamForm({ name: "", division: "Premier" });
-      } catch (error) {
-        console.error("Error adding teams:", error);
-        alert("Failed to add teams. Please try again.");
+        // Keep track of new teams locally
+        updatedTeams.push({
+          id: teamRef.id,
+          name: team.name,
+          division: team.division,
+        });
       }
+
+      // Update local state so the club object has the new teams
+      setClubs((prevClubs) =>
+        prevClubs.map((club) =>
+          club.id === currentClubForTeam.id
+            ? { ...club, teams: [...(club.teams || []), ...updatedTeams] }
+            : club
+        )
+      );
+
+      setAddTeamModalOpen(false);
+      setTeamsToAdd([]);
+      setTeamForm({ name: "", division: "Premier" });
+    } catch (error) {
+      console.error("Error adding teams:", error);
+      alert("Failed to add teams. Please try again.");
     }
   };
 
   // Player management functions
-  const openAddPlayerModal = (club) => {
-    if (!club.teams || club.teams.length === 0) {
-      alert("Please add at least one team before adding players.");
-      return;
-    }
-
+  const openAddPlayerModal = async (club) => {
     setCurrentClubForPlayer(club);
     setPlayersToAdd([]);
     setPlayerForm({
@@ -279,9 +278,32 @@ const ClubEdit = () => {
       surname: "",
       cellphone: "",
       dsaNumber: "",
-      team: club.teams[0]?.name || "",
+      team: "",
     });
-    setAddPlayerModalOpen(true);
+
+    try {
+      const teamsQuery = query(
+        collection(db, "teams"),
+        where("clubId", "==", club.id)
+      );
+      const snapshot = await getDocs(teamsQuery);
+      const clubTeams = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      if (clubTeams.length === 0) {
+        alert("Please add at least one team before adding players.");
+        return;
+      }
+
+      setCurrentClubForPlayer((prev) => ({ ...prev, teams: clubTeams }));
+      setPlayerForm((prev) => ({ ...prev, team: clubTeams[0].name }));
+      setAddPlayerModalOpen(true);
+    } catch (error) {
+      console.error("Error fetching teams:", error);
+      alert("Failed to fetch teams. Please try again.");
+    }
   };
 
   const handlePlayerInputChange = (e) => {
@@ -301,22 +323,27 @@ const ClubEdit = () => {
   const [availableTeams, setAvailableTeams] = useState([]);
 
   // --- League handlers ---
-  const handleDivisionChange = (e) => {
+  const handleDivisionChange = async (e) => {
     const division = e.target.value;
     setSelectedDivision(division);
 
-    // Filter teams from all clubs based on selected division
-    const filteredTeams = [];
-    clubs.forEach((club) => {
-      club.teams?.forEach((team) => {
-        if (team.division === division) {
-          filteredTeams.push({ ...team, clubName: club.name });
+    try {
+      // Fetch all teams in the selected division
+      const teamsSnapshot = await getDocs(collection(db, "teams"));
+      const filteredTeams = [];
+      teamsSnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.division === division) {
+          filteredTeams.push({ id: doc.id, ...data });
         }
       });
-    });
 
-    setAvailableTeams(filteredTeams);
-    setLeagueTeamForm({ team: "" }); // reset team selection
+      setAvailableTeams(filteredTeams);
+      setLeagueTeamForm({ team: "" }); // reset team selection
+    } catch (error) {
+      console.error("Error fetching teams for division:", error);
+      alert("Failed to fetch teams. Please try again.");
+    }
   };
 
   const handleLeagueTeamChange = (e) => {
@@ -350,24 +377,55 @@ const ClubEdit = () => {
   };
 
   const savePlayers = async () => {
-    if (currentClubForPlayer && playersToAdd.length > 0) {
-      try {
-        await updateDoc(doc(db, "clubs", currentClubForPlayer.id), {
-          players: arrayUnion(...playersToAdd),
-        });
-        setAddPlayerModalOpen(false);
-        setPlayerForm({
-          name: "",
-          surname: "",
-          cellphone: "",
-          dsaNumber: "",
-          team: "",
-        });
-        setPlayersToAdd([]);
-      } catch (error) {
-        console.error("Error adding players: ", error);
-        alert("Failed to add players. Please try again.");
+    if (!currentClubForPlayer || playersToAdd.length === 0) return;
+
+    try {
+      for (const player of playersToAdd) {
+        try {
+          await setDoc(doc(db, "players", player.id), {
+            name: player.name,
+            surname: player.surname,
+            cellphone: player.cellphone,
+            dsaNumber: player.dsaNumber,
+            team: player.team,
+            clubId: currentClubForPlayer.id,
+            onLoan: player.onLoan || false,
+            originalTeam: player.originalTeam || player.team,
+            loanedTo: player.loanedTo || null,
+            createdAt: new Date(),
+          });
+
+          // Update the club's players array in local state
+          setClubs((prevClubs) =>
+            prevClubs.map((club) =>
+              club.id === currentClubForPlayer.id
+                ? {
+                    ...club,
+                    players: [...(club.players || []), player],
+                  }
+                : club
+            )
+          );
+        } catch (err) {
+          console.error(
+            `Failed to add player ${player.name} ${player.surname}:`,
+            err
+          );
+          continue; // Skip problematic player but continue loop
+        }
       }
+
+      setAddPlayerModalOpen(false);
+      setPlayersToAdd([]);
+      setPlayerForm({
+        name: "",
+        surname: "",
+        cellphone: "",
+        dsaNumber: "",
+        team: currentClubForPlayer?.teams?.[0]?.name || "",
+      });
+    } catch (error) {
+      console.error("Unexpected error in savePlayers:", error);
     }
   };
 
@@ -390,64 +448,47 @@ const ClubEdit = () => {
   };
 
   const savePlayerEdit = async () => {
-    if (editingPlayer && clubToView) {
+    if (editingPlayer) {
       try {
-        // First remove the old player
-        await updateDoc(doc(db, "clubs", clubToView.id), {
-          players: arrayRemove(editingPlayer),
-        });
-
-        // Then add the updated player
-        await updateDoc(doc(db, "clubs", clubToView.id), {
-          players: arrayUnion({
-            ...editingPlayer,
-            name: editPlayerForm.name,
-            surname: editPlayerForm.surname,
-            cellphone: editPlayerForm.cellphone,
-            dsaNumber: editPlayerForm.dsaNumber,
-            team: editPlayerForm.team,
-          }),
+        await updateDoc(doc(db, "players", editingPlayer.id), {
+          name: editPlayerForm.name,
+          surname: editPlayerForm.surname,
+          cellphone: editPlayerForm.cellphone,
+          dsaNumber: editPlayerForm.dsaNumber,
+          team: editPlayerForm.team,
         });
 
         setEditingPlayer(null);
       } catch (error) {
-        console.error("Error updating player: ", error);
+        console.error("Error updating player:", error);
         alert("Failed to update player. Please try again.");
       }
     }
   };
 
   const handleDeletePlayer = async (playerId) => {
-    if (clubToView) {
-      try {
-        const playerToDelete = clubToView.players.find(
-          (player) => player.id === playerId
-        );
-        if (playerToDelete) {
-          await updateDoc(doc(db, "clubs", clubToView.id), {
-            players: arrayRemove(playerToDelete),
-          });
-          setDeleteConfirmPlayer(null);
-        }
-      } catch (error) {
-        console.error("Error deleting player: ", error);
-        alert("Failed to delete player. Please try again.");
-      }
+    try {
+      await deleteDoc(doc(db, "players", playerId));
+      setDeleteConfirmPlayer(null);
+    } catch (error) {
+      console.error("Error deleting player:", error);
+      alert("Failed to delete player. Please try again.");
     }
   };
 
-  const handleAddTeam = async (clubId, teamName) => {
+  const handleAddTeam = async (clubId, teamName, division) => {
     try {
       // Add team inside the club's subcollection
       const teamRef = await addDoc(collection(db, "clubs", clubId, "teams"), {
         name: teamName,
+        division,
         createdAt: new Date(),
       });
 
       // Duplicate team into the top-level "teams" collection
       await setDoc(doc(db, "teams", teamRef.id), {
         name: teamName,
-        division: team.division, // add this
+        division,
         clubId,
         createdAt: new Date(),
       });
@@ -521,7 +562,11 @@ const ClubEdit = () => {
                 required
               />
             </div>
-            <button type="submit" className="register-button">
+            <button
+              type="submit"
+              className="register-button"
+              disabled={!newClub.name || !newClub.email || !newClub.code}
+            >
               Register Club
             </button>
           </form>
@@ -553,7 +598,13 @@ const ClubEdit = () => {
           </div>
           <div className="summary-tile">
             <h3>Loaned</h3>
-            <p className="summary-count">0</p>
+            <p className="summary-count">
+              {clubs.reduce(
+                (total, club) =>
+                  total + (club.players?.filter((p) => p.onLoan).length || 0),
+                0
+              )}
+            </p>
           </div>
         </div>
 
@@ -1096,6 +1147,13 @@ const ClubEdit = () => {
                     value={editPlayerForm.team}
                     onChange={handlePlayerEditInputChange}
                   >
+                    {clubToView?.teams?.some(
+                      (t) => t.name === editPlayerForm.team
+                    ) ? null : (
+                      <option value={editPlayerForm.team}>
+                        {editPlayerForm.team} (current)
+                      </option>
+                    )}
                     {clubToView?.teams?.map((team) => (
                       <option key={team.id} value={team.name}>
                         {team.name} ({team.division})
