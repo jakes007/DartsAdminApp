@@ -9,6 +9,7 @@ import {
   onSnapshot,
   arrayUnion,
   arrayRemove,
+  setDoc,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import "./ClubEdit.css";
@@ -219,17 +220,46 @@ const ClubEdit = () => {
     setTeamsToAdd(teamsToAdd.filter((team) => team.id !== id));
   };
 
+  // Save teams
   const saveTeams = async () => {
     if (currentClubForTeam && teamsToAdd.length > 0) {
       try {
-        await updateDoc(doc(db, "clubs", currentClubForTeam.id), {
-          teams: arrayUnion(...teamsToAdd),
-        });
+        const clubRef = doc(db, "clubs", currentClubForTeam.id);
+
+        for (const team of teamsToAdd) {
+          // Add to subcollection
+          const teamRef = await addDoc(
+            collection(db, "clubs", currentClubForTeam.id, "teams"),
+            {
+              name: team.name,
+              division: team.division,
+              createdAt: new Date(),
+            }
+          );
+
+          // Add to top-level teams collection
+          await setDoc(doc(db, "teams", teamRef.id), {
+            name: team.name,
+            division: team.division,
+            clubId: currentClubForTeam.id,
+            createdAt: new Date(),
+          });
+
+          // Add to the parent club's `teams` array
+          await updateDoc(clubRef, {
+            teams: arrayUnion({
+              id: teamRef.id,
+              name: team.name,
+              division: team.division,
+            }),
+          });
+        }
+
         setAddTeamModalOpen(false);
-        setTeamForm({ name: "", division: "Premier" });
         setTeamsToAdd([]);
+        setTeamForm({ name: "", division: "Premier" });
       } catch (error) {
-        console.error("Error adding teams: ", error);
+        console.error("Error adding teams:", error);
         alert("Failed to add teams. Please try again.");
       }
     }
@@ -260,6 +290,37 @@ const ClubEdit = () => {
       ...playerForm,
       [name]: value,
     });
+  };
+
+  // --- League creation state ---
+  const [leagueModalOpen, setLeagueModalOpen] = useState(false);
+  const [selectedDivision, setSelectedDivision] = useState("");
+  const [leagueTeamForm, setLeagueTeamForm] = useState({
+    team: "",
+  });
+  const [availableTeams, setAvailableTeams] = useState([]);
+
+  // --- League handlers ---
+  const handleDivisionChange = (e) => {
+    const division = e.target.value;
+    setSelectedDivision(division);
+
+    // Filter teams from all clubs based on selected division
+    const filteredTeams = [];
+    clubs.forEach((club) => {
+      club.teams?.forEach((team) => {
+        if (team.division === division) {
+          filteredTeams.push({ ...team, clubName: club.name });
+        }
+      });
+    });
+
+    setAvailableTeams(filteredTeams);
+    setLeagueTeamForm({ team: "" }); // reset team selection
+  };
+
+  const handleLeagueTeamChange = (e) => {
+    setLeagueTeamForm({ team: e.target.value });
   };
 
   const addPlayerToList = () => {
@@ -372,6 +433,30 @@ const ClubEdit = () => {
         console.error("Error deleting player: ", error);
         alert("Failed to delete player. Please try again.");
       }
+    }
+  };
+
+  const handleAddTeam = async (clubId, teamName) => {
+    try {
+      // Add team inside the club's subcollection
+      const teamRef = await addDoc(collection(db, "clubs", clubId, "teams"), {
+        name: teamName,
+        createdAt: new Date(),
+      });
+
+      // Duplicate team into the top-level "teams" collection
+      await setDoc(doc(db, "teams", teamRef.id), {
+        name: teamName,
+        division: team.division, // add this
+        clubId,
+        createdAt: new Date(),
+      });
+
+      console.log(
+        "✅ Team added to both clubs/{clubId}/teams and top-level teams"
+      );
+    } catch (error) {
+      console.error("❌ Error adding team:", error);
     }
   };
 

@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase";
 
 interface Team {
   id: string;
   name: string;
+  division: string;
 }
 
 interface CreateLeagueModalProps {
   isOpen: boolean;
   onClose: () => void;
-  teams: Team[];
   onCreateLeague: (data: {
     division: string;
     startDate: Date;
@@ -19,7 +21,6 @@ interface CreateLeagueModalProps {
 const CreateLeagueModal = ({
   isOpen,
   onClose,
-  teams,
   onCreateLeague,
 }: CreateLeagueModalProps) => {
   const [division, setDivision] = useState("");
@@ -29,8 +30,56 @@ const CreateLeagueModal = ({
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showTeamDropdown, setShowTeamDropdown] = useState(false);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loadingTeams, setLoadingTeams] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [availableTeams, setAvailableTeams] = useState<Team[]>([]);
 
   const teamDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fetch teams from Firestore - all teams
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setLoadingTeams(true);
+    setError(null);
+
+    try {
+      const unsubscribe = onSnapshot(
+        collection(db, "clubs"),
+        (clubsSnapshot) => {
+          const allTeams: Team[] = [];
+
+          clubsSnapshot.forEach((clubDoc) => {
+            const clubData = clubDoc.data();
+            if (clubData.teams && Array.isArray(clubData.teams)) {
+              clubData.teams.forEach((team: Team) => {
+                allTeams.push({
+                  id: team.id,
+                  name: team.name,
+                  division: team.division || "Unknown Division",
+                });
+              });
+            }
+          });
+
+          setTeams(allTeams);
+          setLoadingTeams(false);
+        },
+        (err) => {
+          console.error("Error fetching clubs:", err);
+          setError("Failed to load teams. Please try again.");
+          setLoadingTeams(false);
+        }
+      );
+
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("Unexpected error loading teams:", err);
+      setError("Unexpected error loading teams.");
+      setLoadingTeams(false);
+    }
+  }, [isOpen]);
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -40,6 +89,9 @@ const CreateLeagueModal = ({
       setSelectedTeams([]);
       setCurrentMonth(new Date().getMonth());
       setCurrentYear(new Date().getFullYear());
+      setAvailableTeams([]);
+      setLoadingTeams(true);
+      setError(null);
     }
   }, [isOpen]);
 
@@ -63,13 +115,11 @@ const CreateLeagueModal = ({
   if (!isOpen) return null;
 
   // Calendar functions
-  const getDaysInMonth = (month: number, year: number) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
+  const getDaysInMonth = (month: number, year: number) =>
+    new Date(year, month + 1, 0).getDate();
 
-  const getFirstDayOfMonth = (month: number, year: number) => {
-    return new Date(year, month, 1).getDay();
-  };
+  const getFirstDayOfMonth = (month: number, year: number) =>
+    new Date(year, month, 1).getDay();
 
   const navigateMonth = (direction: number) => {
     let newMonth = currentMonth + direction;
@@ -96,6 +146,17 @@ const CreateLeagueModal = ({
     setShowCalendar(false);
   };
 
+  // --- NEW: handle division change ---
+  const handleDivisionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = e.target.value;
+    setDivision(selected);
+
+    // Filter teams based on selected division
+    const filtered = teams.filter((team) => team.division === selected);
+    setAvailableTeams(filtered);
+    setSelectedTeams([]); // reset any previously selected teams
+  };
+
   const handleTeamSelect = (teamId: string) => {
     setSelectedTeams((prev) =>
       prev.includes(teamId)
@@ -105,6 +166,10 @@ const CreateLeagueModal = ({
   };
 
   const handleTeamDropdownToggle = () => {
+    if (!division) {
+      alert("Please select a division first");
+      return;
+    }
     setShowTeamDropdown(!showTeamDropdown);
   };
 
@@ -125,6 +190,7 @@ const CreateLeagueModal = ({
     setDivision("");
     setSelectedDate(null);
     setSelectedTeams([]);
+    setAvailableTeams([]);
     onClose();
   };
 
@@ -133,12 +199,10 @@ const CreateLeagueModal = ({
   const firstDay = getFirstDayOfMonth(currentMonth, currentYear);
   const days = [];
 
-  // Add empty cells for days before the first day of the month
   for (let i = 0; i < firstDay; i++) {
     days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
   }
 
-  // Add cells for each day of the month
   for (let day = 1; day <= daysInMonth; day++) {
     const isSelected =
       selectedDate &&
@@ -198,7 +262,7 @@ const CreateLeagueModal = ({
               <select
                 id="divisionSelect"
                 value={division}
-                onChange={(e) => setDivision(e.target.value)}
+                onChange={handleDivisionChange}
                 required
               >
                 <option value="">Select Division</option>
@@ -278,7 +342,7 @@ const CreateLeagueModal = ({
               )}
             </div>
 
-            {/* Team Selection - Updated to dropdown */}
+            {/* Team Selection */}
             <div
               className="form-group team-selection-group"
               ref={teamDropdownRef}
@@ -299,12 +363,18 @@ const CreateLeagueModal = ({
 
               {showTeamDropdown && (
                 <div className="team-dropdown">
-                  {teams.length === 0 ? (
+                  {error ? (
+                    <div className="no-teams-message error">{error}</div>
+                  ) : loadingTeams ? (
+                    <div className="no-teams-message">Loading teams...</div>
+                  ) : availableTeams.length === 0 ? (
                     <div className="no-teams-message">
-                      No teams available. Please create teams first.
+                      {division
+                        ? "No teams in this division."
+                        : "Please select a division first."}
                     </div>
                   ) : (
-                    teams.map((team) => (
+                    availableTeams.map((team) => (
                       <div
                         key={team.id}
                         className={`team-dropdown-item ${
@@ -317,7 +387,9 @@ const CreateLeagueModal = ({
                             <span className="checkmark">✓</span>
                           )}
                         </span>
-                        <span className="team-name">{team.name}</span>
+                        <span className="team-name">
+                          {team.name} ({team.division})
+                        </span>
                       </div>
                     ))
                   )}
@@ -331,7 +403,7 @@ const CreateLeagueModal = ({
                 <h4>Selected Teams</h4>
                 <div className="selected-teams-list">
                   {selectedTeams.map((teamId) => {
-                    const team = teams.find((t) => t.id === teamId);
+                    const team = availableTeams.find((t) => t.id === teamId);
                     return (
                       <div key={teamId} className="selected-team-item">
                         <span>{team?.name}</span>

@@ -1,6 +1,15 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import "./CompetitionStats.css";
+// 1. Import Firestore functions and the db object
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+} from "firebase/firestore";
+import { db } from "./firebase";
 
 interface PlayerStats {
   id: string;
@@ -30,45 +39,9 @@ const CompetitionStats = () => {
   const competitionName =
     location.state?.competitionName || `Competition ${id}`;
 
-  // Mock data - replace with Firestore data later
-  const mockPlayerStats: PlayerStats[] = [
-    {
-      id: "1",
-      playerName: "Player One",
-      matchesPlayed: 10,
-      legsWon: 25,
-      legsLost: 15,
-      tons: 12,
-      ton80s: 3,
-      dartsUsed: 450,
-      winPercentage: 62.5,
-      average: 65.2,
-    },
-    {
-      id: "2",
-      playerName: "Player Two",
-      matchesPlayed: 9,
-      legsWon: 20,
-      legsLost: 16,
-      tons: 8,
-      ton80s: 1,
-      dartsUsed: 420,
-      winPercentage: 55.6,
-      average: 58.7,
-    },
-    {
-      id: "3",
-      playerName: "Player Three",
-      matchesPlayed: 11,
-      legsWon: 28,
-      legsLost: 17,
-      tons: 15,
-      ton80s: 4,
-      dartsUsed: 480,
-      winPercentage: 62.2,
-      average: 67.8,
-    },
-  ];
+  // 2. Replace mock data with state for real data
+  const [playerStats, setPlayerStats] = useState<PlayerStats[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Stats configuration - dynamic from location.state or fallback to default
   const competitionStatsConfig: StatsField[] = location.state?.statsConfig || [
@@ -83,11 +56,56 @@ const CompetitionStats = () => {
     { key: "average", label: "Avg", description: "3-Dart Average" },
   ];
 
+  // 3. Fetch player stats from Firestore
+  useEffect(() => {
+    if (!id) return;
+
+    setLoading(true);
+
+    // Query the playerStats collection for stats related to this competition
+    const q = query(
+      collection(db, "playerStats"),
+      where("competitionId", "==", id),
+      orderBy("average", "desc") // Optional: order by average descending
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const statsData: PlayerStats[] = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          statsData.push({
+            id: doc.id,
+            playerName: data.playerName || "Unknown Player",
+            matchesPlayed: data.matchesPlayed || 0,
+            legsWon: data.legsWon || 0,
+            legsLost: data.legsLost || 0,
+            tons: data.tons || 0,
+            ton80s: data.ton80s || 0,
+            dartsUsed: data.dartsUsed || 0,
+            winPercentage: data.winPercentage || 0,
+            average: data.average || 0,
+          });
+        });
+
+        setPlayerStats(statsData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching player stats:", error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [id]);
+
   const handleBackToSetup = () => {
     navigate("/setup");
   };
 
-  // Tooltip component
+  // Tooltip component (unchanged)
   const Tooltip = ({ description }: { description: string }) => {
     const [isVisible, setIsVisible] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -114,7 +132,7 @@ const CompetitionStats = () => {
     }, []);
 
     return (
-      <span 
+      <span
         className="tooltip-container"
         onMouseEnter={showTooltip}
         onMouseLeave={hideTooltip}
@@ -148,31 +166,44 @@ const CompetitionStats = () => {
 
       <main className="competition-stats-main">
         <div className="stats-table-container">
-          <table className="stats-table">
-            <thead>
-              <tr>
-                {competitionStatsConfig.map((field) => (
-                  <th key={field.key}>
-                    <div className="column-header">
-                      <span>{field.label}</span>
-                      <Tooltip description={field.description} />
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {mockPlayerStats.map((player) => (
-                <tr key={player.id}>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "2rem" }}>
+              <p>Loading statistics...</p>
+            </div>
+          ) : playerStats.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "2rem" }}>
+              <p>
+                No statistics available yet. No fixtures have been created for
+                this competition.
+              </p>
+            </div>
+          ) : (
+            <table className="stats-table">
+              <thead>
+                <tr>
                   {competitionStatsConfig.map((field) => (
-                    <td key={`${player.id}-${field.key}`}>
-                      {player[field.key as keyof PlayerStats]}
-                    </td>
+                    <th key={field.key}>
+                      <div className="column-header">
+                        <span>{field.label}</span>
+                        <Tooltip description={field.description} />
+                      </div>
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {playerStats.map((player) => (
+                  <tr key={player.id}>
+                    {competitionStatsConfig.map((field) => (
+                      <td key={`${player.id}-${field.key}`}>
+                        {player[field.key as keyof PlayerStats]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </main>
     </div>
