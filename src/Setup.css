@@ -790,6 +790,7 @@ select:focus {
     display: block;
     font-size: 1.5rem;
   }
+  }
 
   .setup-main {
     padding: 0 1rem 2rem;
