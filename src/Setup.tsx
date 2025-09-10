@@ -4,22 +4,9 @@ import CreateLeagueModal from "./components/CreateLeagueModal";
 import "./Setup.css";
 import { Link } from "react-router-dom";
 
-// 1. Import Firestore functions and the `db` object
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  query,
-  orderBy,
-} from "firebase/firestore";
-import { db } from "./firebase"; // This import already exists and is correct
-
 // Define the Competition type
 interface Competition {
-  id: string; // Changed from number to string because Firestore uses string IDs
+  id: number;
   name: string;
   type: string;
   teams: number;
@@ -40,12 +27,37 @@ const competitionStatsConfig = [
   { key: "average", label: "Avg", description: "3-Dart Average" },
 ];
 
-// 2. REMOVED the mockTeams array. We will fetch teams from Firestore.
+// This would typically come from your data store
+const mockTeams = [
+  { id: "1", name: "Team Alpha" },
+  { id: "2", name: "Team Beta" },
+  { id: "3", name: "Team Gamma" },
+  { id: "4", name: "Team Delta" },
+  { id: "5", name: "Team Epsilon" },
+  { id: "6", name: "Team Zeta" },
+];
 
 const Setup = () => {
   const navigate = useNavigate();
-  // 3. Replace mock state with an empty array. It will be populated by Firestore.
-  const [leagues, setLeagues] = useState<Competition[]>([]);
+  const [leagues, setLeagues] = useState<Competition[]>([
+    {
+      id: 1,
+      name: "Premier League",
+      type: "league",
+      teams: 12,
+      startDate: "2023-09-15",
+      status: "Active",
+      division: "Premier",
+    },
+    {
+      id: 2,
+      name: "Summer Cup",
+      type: "tournament",
+      teams: 8,
+      startDate: "2023-07-01",
+      status: "Completed",
+    },
+  ]);
   const [isCreateLeagueModalOpen, setIsCreateLeagueModalOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] =
     useState<Competition | null>(null);
@@ -59,33 +71,6 @@ const Setup = () => {
     status: "Upcoming",
     division: "Premier",
   });
-
-  // 4. Fetch Competitions from Firestore when the component loads
-  useEffect(() => {
-    // Create a query against the 'competitions' collection, ordered by name
-    const q = query(collection(db, "competitions"), orderBy("name"));
-    // `onSnapshot` sets up a real-time listener. It runs now and every time the data changes.
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const competitionsData: Competition[] = [];
-      querySnapshot.forEach((doc) => {
-        // doc.data() is the object containing our competition data
-        const data = doc.data();
-        competitionsData.push({
-          id: doc.id, // Firestore's auto-generated ID
-          name: data.name,
-          type: data.type,
-          teams: data.teams,
-          startDate: data.startDate, // Ensure this is stored as a string in Firestore
-          status: data.status,
-          division: data.division,
-        });
-      });
-      setLeagues(competitionsData); // Update our state with the real data
-    });
-
-    // Return a cleanup function to unsubscribe from the listener when the component unmounts
-    return () => unsubscribe();
-  }, []); // The empty dependency array means this runs once on mount.
 
   // Update edit form when competition changes
   useEffect(() => {
@@ -118,35 +103,26 @@ const Setup = () => {
     // Will implement tournament creation functionality later
   };
 
-  // 5. UPDATE: Save the new league to Firestore, not local state.
-  const handleLeagueCreation = async (leagueData: {
+  const handleLeagueCreation = (leagueData: {
     division: string;
     startDate: Date;
     teams: string[];
   }) => {
-    try {
-      // Add a new document to the "competitions" collection
-      const docRef = await addDoc(collection(db, "competitions"), {
-        name: `${leagueData.division} League`,
-        type: "league",
-        teams: leagueData.teams.length,
-        startDate: leagueData.startDate.toISOString().split("T")[0], // Store as YYYY-MM-DD
-        status: "Upcoming",
-        division: leagueData.division,
-        // You might also want to store the actual team IDs here later:
-        // teamIds: leagueData.teams
-      });
-      console.log("League written with ID: ", docRef.id);
+    // This is where you would connect to Firestore
+    console.log("Creating league with data:", leagueData);
 
-      // The `onSnapshot` listener above will automatically detect this new document
-      // and update the `leagues` state, so we don't need to do it here.
+    // For now, just add to local state
+    const newLeague: Competition = {
+      id: Date.now(),
+      name: `${leagueData.division} League`,
+      type: "league",
+      teams: leagueData.teams.length,
+      startDate: leagueData.startDate.toISOString().split("T")[0],
+      status: "Upcoming",
+      division: leagueData.division,
+    };
 
-      // Reset form and close modal
-      setIsCreateLeagueModalOpen(false);
-    } catch (error) {
-      console.error("Error adding league: ", error);
-      alert("Failed to create league. Please try again.");
-    }
+    setLeagues([...leagues, newLeague]);
   };
 
   const handleEditCompetition = (competition: Competition) => {
@@ -157,17 +133,12 @@ const Setup = () => {
     setDeleteConfirmCompetition(competition);
   };
 
-  // 6. UPDATE: Delete the competition from Firestore
-  const confirmDeleteCompetition = async () => {
+  const confirmDeleteCompetition = () => {
     if (deleteConfirmCompetition) {
-      try {
-        await deleteDoc(doc(db, "competitions", deleteConfirmCompetition.id));
-        // The `onSnapshot` listener will automatically update the `leagues` state.
-        setDeleteConfirmCompetition(null);
-      } catch (error) {
-        console.error("Error deleting competition: ", error);
-        alert("Failed to delete competition. Please try again.");
-      }
+      setLeagues(
+        leagues.filter((league) => league.id !== deleteConfirmCompetition.id)
+      );
+      setDeleteConfirmCompetition(null);
     }
   };
 
@@ -181,20 +152,16 @@ const Setup = () => {
     });
   };
 
-  // 7. UPDATE: Save the edited competition to Firestore
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = () => {
     if (editingCompetition) {
-      try {
-        // Get a reference to the existing document
-        const competitionRef = doc(db, "competitions", editingCompetition.id);
-        // Update the document with the new form data
-        await updateDoc(competitionRef, { ...editFormData });
-        // The `onSnapshot` listener will automatically update the `leagues` state.
-        setEditingCompetition(null);
-      } catch (error) {
-        console.error("Error updating competition: ", error);
-        alert("Failed to update competition. Please try again.");
-      }
+      const updatedLeagues = leagues.map((league) =>
+        league.id === editingCompetition.id
+          ? { ...editingCompetition, ...editFormData }
+          : league
+      );
+
+      setLeagues(updatedLeagues);
+      setEditingCompetition(null);
     }
   };
 
@@ -315,6 +282,7 @@ const Setup = () => {
       <CreateLeagueModal
         isOpen={isCreateLeagueModalOpen}
         onClose={() => setIsCreateLeagueModalOpen(false)}
+        teams={mockTeams}
         onCreateLeague={handleLeagueCreation}
       />
 
