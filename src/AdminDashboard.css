@@ -146,7 +146,12 @@
   .logout-btn {
     grid-column: 3;
     padding: 0.7rem;
-    justify-self: end;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .logout-text {
@@ -156,11 +161,6 @@
   .logout-icon {
     display: block;
     font-size: 1.5rem;
-    transform: rotate(90deg); /* Curved arrow for logout - matches ClubEdit */
-  }
-
-  .admin-main {
-    padding: 2rem 1rem;
   }
 }
 

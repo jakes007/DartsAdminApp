@@ -761,19 +761,15 @@ select:focus {
     text-align: center;
   }
 
-  .header-left {
-    grid-column: 1;
-    justify-content: flex-start;
-  }
-
-  .header-right {
-    grid-column: 3;
-    justify-content: flex-end;
-  }
-
   .back-btn,
   .logout-btn {
     padding: 0.7rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .back-text,
@@ -784,12 +780,11 @@ select:focus {
   .back-arrow,
   .logout-icon {
     display: block;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
   }
 
   .logout-icon {
-    font-size: 1.5rem;
-    transform: rotate(90deg);
+    transform: none;
   }
 
   .setup-main {

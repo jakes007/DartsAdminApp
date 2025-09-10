@@ -505,22 +505,19 @@ const ClubEdit = () => {
   const sortedClubs = [...clubs].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <div className="club-edit-header">
-  <div className="header-left">
-    <button className="back-btn">Back</button>
-  </div>
-  <h1>Club Edit</h1>
-  <div className="header-right">
-    <button className="logout-btn">Logout</button>
-  </div>
-</div>
+    <div className="club-edit-container">
+      <header className="club-edit-header">
+        <div className="header-left">
+          <button className="back-btn" onClick={handleBackToAdmin}>
+            <span className="back-arrow">←</span>
+          </button>
+        </div>
 
         <h1>Manage</h1>
 
         <div className="header-right">
           <button className="logout-btn" onClick={handleLogout}>
-            <span className="logout-text">Log Out</span>
-            <span className="logout-icon">⎋</span>
+            <span className="logout-icon">⏻</span>
           </button>
         </div>
       </header>
