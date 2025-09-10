@@ -81,14 +81,20 @@ html,
   font-family: "Inter", sans-serif;
   font-weight: 500;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center; /* vertical centering */
+  justify-content: center; /* horizontal centering */
   padding: 0.7rem 1.5rem;
+  border: 1px solid currentColor;
 }
 
 .back-btn {
   color: #00ffff;
-  border: 1px solid #00ffff;
+  border-color: #00ffff;
+}
+
+.logout-btn {
+  color: #ff6b6b;
+  border-color: #ff6b6b;
 }
 
 .back-btn:hover {
@@ -96,19 +102,20 @@ html,
   box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
 }
 
-.logout-btn {
-  color: #ff6b6b;
-  border: 1px solid #ff6b6b;
-}
-
 .logout-btn:hover {
   background: rgba(255, 107, 107, 0.2);
   box-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
 }
 
+/* Icon Spans */
 .back-arrow,
 .logout-icon {
-  display: none;
+  display: inline-flex;        /* show icons on all screens */
+  align-items: center;         /* vertical centering */
+  justify-content: center;     /* horizontal centering */
+  line-height: 1;              /* prevents icon from shifting */
+  font-size: 1.2rem;           /* adjust icon size */
+  margin-left: 0.5rem;         /* optional spacing between text and icon */
 }
 
 .club-edit-main {
