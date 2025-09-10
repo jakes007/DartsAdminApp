@@ -508,7 +508,9 @@ const ClubEdit = () => {
     <header className="club-edit-header">
   <div className="header-left">
     <button className="back-btn" onClick={handleBackToAdmin}>
-      <span className="back-arrow">🏠</span> {/* new mobile icon */}
+      {/* Mobile icon */}
+      <span className="back-arrow">🏠</span> 
+      {/* Optional: keep text hidden on mobile */}
       <span className="back-text">Back to Admin</span>
     </button>
   </div>
@@ -517,7 +519,9 @@ const ClubEdit = () => {
 
   <div className="header-right">
     <button className="logout-btn" onClick={handleLogout}>
-      <span className="logout-icon">🔒</span> {/* new mobile icon */}
+      {/* Mobile icon */}
+      <span className="logout-icon">🔒</span> 
+      {/* Optional: keep text hidden on mobile */}
       <span className="logout-text">Log Out</span>
     </button>
   </div>
