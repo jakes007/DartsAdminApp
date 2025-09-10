@@ -786,7 +786,13 @@ html,
   
  
   
+  .back-arrow::before {
+    content: "🏠";
+  }
   
+  .logout-icon::before {
+    content: "🔒";
+  }
 
   .club-edit-main {
     padding: 1.5rem 1rem 2rem;
