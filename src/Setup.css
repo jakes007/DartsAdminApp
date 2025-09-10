@@ -771,14 +771,13 @@ select:focus {
     justify-content: flex-end;
   }
 
-  .back-btn,
-  .logout-btn {
+  .back-btn, .logout-btn {
     width: 44px;
     height: 44px;
     padding: 0;
     display: flex;
-    align-items: center;   /* centers icon vertically */
-    justify-content: center; /* centers icon horizontally */
+    align-items: center;
+    justify-content: center;
     border-radius: 8px;
   }
 
@@ -787,16 +786,10 @@ select:focus {
     display: none;
   }
 
-  .back-arrow,
-  .logout-icon {
-    display: flex;             /* ensures span acts like flexbox */
-    align-items: center;       /* vertical center */
-    justify-content: center;   /* horizontal center */
+  .back-arrow, .logout-icon {
+    display: block;
     font-size: 1.5rem;
-    line-height: 1;            /* removes baseline offset */
-    height: 100%;              /* makes span fill button height */
   }
-}
 
   .setup-main {
     padding: 0 1rem 2rem;
