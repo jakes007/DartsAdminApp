@@ -46,7 +46,7 @@ html,
   left: 0;
   right: 0;
 
-  /* ✅ ensures the header content doesn’t touch the edges */
+  /* ✅ ensures the header content doesn't touch the edges */
   box-sizing: border-box;
 }
 
@@ -759,11 +759,14 @@ html,
   }
 
   .back-btn, .logout-btn {
-  display: flex;
-  align-items: center; /* vertical centering */
-  justify-content: center; /* horizontal centering */
-  padding: 0.7rem 1.5rem;
-}
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+  }
 
   .back-text,
   .logout-text {
@@ -771,12 +774,9 @@ html,
   }
 
   .back-arrow, .logout-icon {
-  display: inline-flex;
-  align-items: center;  /* vertical centering of icon inside span */
-  justify-content: center;
-  line-height: 1;       /* prevents text icon from shifting down */
-  font-size: 1.2rem;    /* adjust to fit button size */
-}
+    display: block;
+    font-size: 1.5rem;
+  }
 
   .club-edit-main {
     padding: 1.5rem 1rem 2rem;
