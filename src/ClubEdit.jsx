@@ -505,7 +505,8 @@ const ClubEdit = () => {
   const sortedClubs = [...clubs].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <header className="club-edit-header">
+    <div className="club-edit-container">
+      <header className="club-edit-header">
   <div className="header-left">
     <button className="back-btn" onClick={handleBackToAdmin}>
       {/* Mobile icon */}
