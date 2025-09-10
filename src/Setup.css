@@ -876,7 +876,7 @@ select:focus {
   .edit-competition-modal .modal-form {
     grid-template-columns: 1fr;
   }
-}
+
 
 @media (min-width: 768px) and (max-width: 1024px) {
   .setup-actions {
