@@ -796,6 +796,7 @@ select:focus {
     line-height: 1;            /* removes baseline offset */
     height: 100%;              /* makes span fill button height */
   }
+}
 
   .setup-main {
     padding: 0 1rem 2rem;
