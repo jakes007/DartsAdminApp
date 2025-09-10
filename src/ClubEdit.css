@@ -81,8 +81,8 @@ html,
   font-family: "Inter", sans-serif;
   font-weight: 500;
   display: flex;
-  align-items: center; /* vertical centering */
-  justify-content: center; /* horizontal centering */
+  align-items: center;   /* centers content vertically */
+  justify-content: center; /* centers content horizontally */
   padding: 0.7rem 1.5rem;
   border: 1px solid currentColor;
 }
@@ -110,13 +110,17 @@ html,
 /* Icon Spans */
 .back-arrow,
 .logout-icon {
-  display: inline-flex;        /* show icons on all screens */
-  align-items: center;         /* vertical centering */
-  justify-content: center;     /* horizontal centering */
-  line-height: 1;              /* prevents icon from shifting */
-  font-size: 1.2rem;           /* adjust icon size */
-  margin-left: 0.5rem;         /* optional spacing between text and icon */
+  display: flex;             /* flexbox ensures centering */
+  align-items: center;       /* vertical center */
+  justify-content: center;   /* horizontal center */
+  width: 100%;               /* fill button width */
+  height: 100%;              /* fill button height */
+  font-size: 1.2rem;         /* adjust icon size */
+  line-height: 1;            /* remove baseline offset */
+  margin: 0;                 /* no shifting */
+  padding: 0;                /* reset padding */
 }
+
 
 .club-edit-main {
   padding: 2rem;
