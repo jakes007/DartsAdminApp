@@ -749,7 +749,8 @@ select:focus {
 
 /* Mobile Responsive Styles */
 @media (max-width: 767px) {
-  padding: 1rem;
+  .setup-header {
+    padding: 1rem;
     grid-template-columns: auto 1fr auto;
     gap: 0.5rem;
   }
@@ -770,13 +771,14 @@ select:focus {
     justify-content: flex-end;
   }
 
-  .back-btn, .logout-btn {
+  .back-btn,
+  .logout-btn {
     width: 44px;
     height: 44px;
     padding: 0;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: center;   /* centers icon vertically */
+    justify-content: center; /* centers icon horizontally */
     border-radius: 8px;
   }
 
@@ -785,9 +787,14 @@ select:focus {
     display: none;
   }
 
-  .back-arrow, .logout-icon {
-    display: block;
+  .back-arrow,
+  .logout-icon {
+    display: flex;             /* ensures span acts like flexbox */
+    align-items: center;       /* vertical center */
+    justify-content: center;   /* horizontal center */
     font-size: 1.5rem;
+    line-height: 1;            /* removes baseline offset */
+    height: 100%;              /* makes span fill button height */
   }
 
   .setup-main {
