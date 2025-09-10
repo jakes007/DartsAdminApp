@@ -749,8 +749,7 @@ select:focus {
 
 /* Mobile Responsive Styles */
 @media (max-width: 767px) {
-  .setup-header {
-    padding: 1rem;
+  padding: 1rem;
     grid-template-columns: auto 1fr auto;
     gap: 0.5rem;
   }
@@ -761,8 +760,17 @@ select:focus {
     text-align: center;
   }
 
-  .back-btn,
-  .logout-btn {
+  .header-left {
+    grid-column: 1;
+    justify-content: flex-start;
+  }
+
+  .header-right {
+    grid-column: 3;
+    justify-content: flex-end;
+  }
+
+  .back-btn, .logout-btn {
     width: 44px;
     height: 44px;
     padding: 0;
@@ -777,8 +785,7 @@ select:focus {
     display: none;
   }
 
-  .back-arrow,
-  .logout-icon {
+  .back-arrow, .logout-icon {
     display: block;
     font-size: 1.5rem;
   }
