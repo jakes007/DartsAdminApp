@@ -755,7 +755,7 @@ html,
   display: flex;
   align-items: center; /* vertical centering */
   justify-content: center; /* horizontal centering */
-  padding: 0.1.5rem 1.5rem;
+  padding: 0.15rem 1.5rem;
 }
 
   .back-text,
