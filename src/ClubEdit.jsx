@@ -507,20 +507,22 @@ const ClubEdit = () => {
   return (
     <div className="club-edit-container">
       <header className="club-edit-header">
-        <div className="header-left">
-          <button className="back-btn" onClick={handleBackToAdmin}>
-            <span className="back-arrow">←</span>
-          </button>
-        </div>
+  <div className="header-left">
+    <button className="back-btn" onClick={handleBackToAdmin}>
+      <span className="back-text">Back to Admin</span>
+      <span className="back-arrow">←</span>
+    </button>
+  </div>
 
-        <h1>Manage</h1>
+  <h1>Manage</h1>
 
-        <div className="header-right">
-          <button className="logout-btn" onClick={handleLogout}>
-            <span className="logout-icon">⏻</span>
-          </button>
-        </div>
-      </header>
+  <div className="header-right">
+    <button className="logout-btn" onClick={handleLogout}>
+      <span className="logout-text">Log Out</span>
+      <span className="logout-icon">⏻</span>
+    </button>
+  </div>
+</header>
 
       <main className="club-edit-main">
         {/* Registration Tile */}
