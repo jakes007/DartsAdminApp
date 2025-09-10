@@ -1,938 +1,486 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap");
-
-.setup-container {
-  min-height: 100vh;
-  background: radial-gradient(
-      circle at 10% 20%,
-      rgba(25, 50, 80, 0.7) 0%,
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at 90% 80%,
-      rgba(80, 25, 80, 0.7) 0%,
-      transparent 30%
-    ),
-    linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-  color: #e0e0e0;
-  font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  padding: 0;
-}
-
-/* Header Styles */
-.setup-header {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-
-  /* padding only inside the header */
-  padding: 1.5rem 2rem;
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.3);
-  margin-bottom: 2rem;
-
-  width: 100%;
-  position: relative;
-  left: 0;
-  right: 0;
-
-  /* ✅ ensures the header content doesn't touch the edges */
-  box-sizing: border-box;
-}
-
-.setup-header h1 {
-  margin: 0;
-  font-family: "Orbitron", sans-serif;
-  color: #00ffff;
-  font-size: 2rem;
-  text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
-  text-align: center;
-  grid-column: 2;
-}
-
-.header-left {
-  display: flex;
-  justify-content: flex-start;
-  grid-column: 1;
-}
-
-.header-right {
-  display: flex;
-  justify-content: flex-end;
-  grid-column: 3;
-}
-
-.back-btn,
-.logout-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.7rem 1.5rem;
-}
-
-.back-btn {
-  color: #00ffff;
-  border: 1px solid #00ffff;
-}
-
-.back-btn:hover {
-  background: rgba(0, 255, 255, 0.2);
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
-}
-
-.logout-btn {
-  color: #ff6b6b;
-  border: 1px solid #ff6b6b;
-}
-
-.logout-btn:hover {
-  background: rgba(255, 107, 107, 0.2);
-  box-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
-}
-
-.back-arrow,
-.logout-icon {
-  display: none;
-}
-
-/* Main Content */
-.setup-main {
-  padding: 0 2rem 3rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Action Tiles */
-.setup-actions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-  margin-bottom: 3rem;
-}
-
-.action-tile {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 2.5rem 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  transition: all 0.4s ease;
-  cursor: pointer;
-  text-align: center;
-}
-
-.action-tile:nth-child(1) {
-  border-left: 4px solid #ff00ff;
-}
-
-.action-tile:nth-child(2) {
-  border-left: 4px solid #00ffff;
-}
-
-.action-tile:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-}
-
-.action-tile:hover:nth-child(1) {
-  box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
-}
-
-.action-tile:hover:nth-child(2) {
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
-}
-
-.action-tile h2 {
-  font-size: 1.8rem;
-  margin-top: 0;
-  margin-bottom: 1rem;
-  font-family: "Orbitron", sans-serif;
-}
-
-.action-tile p {
-  line-height: 1.6;
-  opacity: 0.8;
-  margin: 0;
-}
-
-/* Competitions Section */
-.competitions-section {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-.competitions-section h2 {
-  font-family: "Orbitron", sans-serif;
-  color: #00ffff;
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
-}
-
-.no-competitions {
-  text-align: center;
-  opacity: 0.7;
-  font-style: italic;
-}
-
-/* Competition Tile */
-.competition-tile {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  border-left: 4px solid #ffff00;
-  position: relative;
-}
-
-.competition-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.competition-header h3 {
-  margin: 0;
-  color: #00ffff;
-  font-size: 1.3rem;
-}
-
-.status-badge {
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.status-badge.active {
-  background-color: rgba(0, 255, 0, 0.2);
-  color: #00ff00;
-}
-
-.status-badge.completed {
-  background-color: rgba(255, 165, 0, 0.2);
-  color: #ffa500;
-}
-
-.status-badge.upcoming {
-  background-color: rgba(0, 191, 255, 0.2);
-  color: #00bfff;
-}
-
-.competition-details {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-
-.detail-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.detail-label {
-  font-size: 0.8rem;
-  opacity: 0.7;
-  margin-bottom: 0.3rem;
-}
-
-.detail-value {
-  font-weight: 600;
-}
-
-/* Competition Actions */
-.competition-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.edit-competition-btn {
-  background: rgba(0, 255, 255, 0.2);
-  color: #00ffff;
-  border: 1px solid #00ffff;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.edit-competition-btn:hover {
-  background: rgba(0, 255, 255, 0.3);
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-}
-
-/* Edit Competition Modal Styles */
-.edit-competition-modal {
-  max-width: 600px;
-}
-
-.edit-competition-modal .modal-form {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-
-.edit-competition-modal .form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.edit-competition-modal .form-group label {
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-
-.edit-competition-modal input,
-.edit-competition-modal select {
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  padding: 0.8rem;
-  color: #e0e0e0;
-  font-family: "Inter", sans-serif;
-  transition: all 0.3s ease;
-}
-
-.edit-competition-modal input:focus,
-.edit-competition-modal select:focus {
-  outline: none;
-  border-color: #00ffff;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-}
-
-/* Create League Modal Styles */
-.create-league-modal {
-  max-width: 600px;
-}
-
-.date-picker-button {
-  width: 100%;
-  padding: 0.8rem;
-  background: rgba(0, 0, 0, 0.5) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 6px;
-  color: #e0e0e0 !important;
-  font-family: "Inter", sans-serif;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.date-picker-button:after {
-  content: "▼";
-  position: absolute;
-  right: 0.8rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #00ffff;
-  font-size: 0.8rem;
-}
-
-.date-picker-button:hover {
-  border-color: rgba(255, 255, 255, 0.3) !important;
-}
-
-.date-picker-button:focus {
-  outline: none;
-  border-color: #00ffff !important;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3) !important;
-}
-
-.calendar-container {
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 0.5rem;
-}
-
-.calendar-navigation {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.calendar-month-year {
-  font-weight: 600;
-  color: #00ffff;
-  font-family: "Orbitron", sans-serif;
-}
-
-.nav-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: #00ffff;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.nav-button:hover {
-  background: rgba(0, 255, 255, 0.2);
-}
-
-.calendar-weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.weekday {
-  text-align: center;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 500;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0.5rem;
-}
-
-.calendar-day {
-  width: 100%;
-  height: 35px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.calendar-day:hover:not(.empty) {
-  background: rgba(0, 255, 255, 0.1);
-}
-
-.calendar-day.today {
-  background: rgba(0, 191, 255, 0.2);
-  border-color: #00bfff;
-}
-
-.calendar-day.selected {
-  background: rgba(0, 255, 255, 0.3);
-  border-color: #00ffff;
-  color: #00ffff;
-  font-weight: 600;
-}
-
-.calendar-day.empty {
-  background: transparent;
-  border: none;
-  cursor: default;
-}
-
-/* Team Dropdown Styles */
-.team-selection-group {
-  position: relative;
-}
-
-.team-dropdown-toggle {
-  width: 100%;
-  padding: 0.8rem;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  color: #e0e0e0;
-  font-family: "Inter", sans-serif;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.team-dropdown-toggle:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.team-dropdown-toggle:focus {
-  outline: none;
-  border-color: #00ffff;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-}
-
-.dropdown-arrow {
-  color: #00ffff;
-  font-size: 0.8rem;
-}
-
-.team-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  margin-top: 0.25rem;
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 1000;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-}
-
-.team-dropdown-item {
-  display: flex;
-  align-items: center;
-  padding: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.team-dropdown-item:last-child {
-  border-bottom: none;
-}
-
-.team-dropdown-item:hover {
-  background: rgba(0, 255, 255, 0.1);
-}
-
-.team-dropdown-item.selected {
-  background: rgba(0, 255, 255, 0.2);
-}
-
-.team-checkbox {
-  width: 18px;
-  height: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-  margin-right: 0.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
-  flex-shrink: 0;
-}
-
-.team-dropdown-item.selected .team-checkbox {
-  background: rgba(0, 255, 255, 0.3);
-  border-color: #00ffff;
-}
-
-.checkmark {
-  color: #00ffff;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.team-name {
-  color: #e0e0e0;
-}
-
-.no-teams-message {
-  text-align: center;
-  opacity: 0.7;
-  font-style: italic;
-  padding: 1rem;
-  margin: 0;
-}
-
-.selected-teams-section {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.selected-teams-section h4 {
-  margin-top: 0;
-  color: #00ffff;
-  font-family: "Orbitron", sans-serif;
-  margin-bottom: 0.8rem;
-}
-
-.selected-teams-list {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  padding: 0.8rem;
-}
-
-.selected-team-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
-  margin-bottom: 0.5rem;
-}
-
-.selected-team-item:last-child {
-  margin-bottom: 0;
-}
-
-.remove-team-button {
-  background: rgba(255, 107, 107, 0.2);
-  color: #ff6b6b;
-  border: none;
-  border-radius: 4px;
-  padding: 0.3rem 0.5rem;
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: all 0.3s ease;
-}
-
-.remove-team-button:hover {
-  background: rgba(255, 107, 107, 0.3);
-}
-
-/* Improved dropdown styling for better visibility */
-select {
-  background: rgba(0, 0, 0, 0.5) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 6px;
-  padding: 0.8rem;
-  color: #e0e0e0 !important;
-  font-family: "Inter", sans-serif;
-  width: 100%;
-  transition: all 0.3s ease;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 0.8rem center !important;
-  background-size: 1rem !important;
-}
-
-select:focus {
-  outline: none;
-  border-color: #00ffff !important;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3) !important;
-}
-
-/* Improve all dropdowns in the application */
-.modal-form.compact-form select {
-  background: rgba(0, 0, 0, 0.5) !important;
-  color: #e0e0e0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-/* Competition Actions */
-.view-competition-btn {
-  background: rgba(0, 255, 0, 0.2);
-  color: #00ff00;
-  border: 1px solid #00ff00;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.view-competition-btn:hover {
-  background: rgba(0, 255, 0, 0.3);
-  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-}
-
-/* Update competition-actions to handle the new button */
-.competition-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.8rem;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  flex-wrap: wrap;
-}
-
-.edit-competition-btn {
-  background: rgba(0, 255, 255, 0.2);
-  color: #00ffff;
-  border: 1px solid #00ffff;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.edit-competition-btn:hover {
-  background: rgba(0, 255, 255, 0.3);
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-}
-
-.delete-competition-btn {
-  background: rgba(255, 107, 107, 0.2);
-  color: #ff6b6b;
-  border: 1px solid #ff6b6b;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-family: "Inter", sans-serif;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.delete-competition-btn:hover {
-  background: rgba(255, 107, 107, 0.3);
-  box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
-}
-
-/* Delete Confirmation Modal */
-.delete-confirm-modal {
-  max-width: 500px;
-}
-
-.delete-confirm-modal .modal-content {
-  text-align: center;
-}
-
-.delete-confirm-modal p {
-  margin-bottom: 1rem;
-  line-height: 1.5;
-}
-
-.modal-delete {
-  background: linear-gradient(135deg, #ff6b6b, #ff4757) !important;
-  color: white !important;
-  border: none !important;
-}
-
-.modal-delete:hover {
-  background: linear-gradient(135deg, #ff4757, #ff3838) !important;
-  box-shadow: 0 0 10px rgba(255, 107, 107, 0.5) !important;
-}
-
-/* Ensure all form inputs have consistent styling */
-.modal-form.compact-form input {
-  background: rgba(0, 0, 0, 0.5) !important;
-  color: #e0e0e0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 6px;
-  padding: 0.8rem;
-  font-family: "Inter", sans-serif;
-  transition: all 0.3s ease;
-}
-
-.modal-form.compact-form input:focus {
-  outline: none;
-  border-color: #00ffff !important;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3) !important;
-}
-
-/* Mobile Responsive Styles */
-@media (max-width: 767px) {
-  .setup-header {
-    padding: 1rem;
-    grid-template-columns: auto 1fr auto;
-    gap: 0.5rem;
-  }
-
-  .setup-header h1 {
-    font-size: 1.5rem;
-    grid-column: 2;
-    text-align: center;
-  }
-
-  .header-left {
-    grid-column: 1;
-    justify-content: flex-start;
-  }
-
-  .header-right {
-    grid-column: 3;
-    justify-content: flex-end;
-  }
-
-  .back-btn, .logout-btn {
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-  }
-
-  .back-text,
-  .logout-text {
-    display: none;
-  }
-
-  .back-arrow, .logout-icon {
-    display: block;
-    font-size: 1.5rem;
-  }
-}
-
-  .setup-main {
-    padding: 0 1rem 2rem;
-  }
-
-  .setup-actions {
-    grid-template-columns: 1fr;
-  }
-
-  .competition-details {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
-
-  .competition-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .calendar-grid {
-    gap: 0.25rem;
-  }
-
-  .calendar-day {
-    height: 30px;
-    font-size: 0.8rem;
-  }
-
-  /* Fix calendar navigation on mobile */
-  .calendar-navigation {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 0.5rem;
-  }
-
-  .calendar-month-year {
-    text-align: center;
-    grid-column: 2;
-    margin: 0;
-  }
-
-  .nav-button:first-child {
-    grid-column: 1;
-    justify-self: start;
-  }
-
-  .nav-button:nth-child(2) {
-    grid-column: 1;
-    grid-row: 2;
-    justify-self: start;
-  }
-
-  .nav-button:nth-child(4) {
-    grid-column: 3;
-    grid-row: 2;
-    justify-self: end;
-  }
-
-  .nav-button:last-child {
-    grid-column: 3;
-    justify-self: end;
-  }
-
-  select {
-    padding: 0.7rem;
-  }
-
-  /* Competition Actions on Mobile */
-  .competition-actions {
-    justify-content: center;
-  }
-
-  .edit-competition-btn {
-    width: 100%;
-    padding: 0.7rem;
-  }
-
-  /* Edit modal on mobile */
-  .edit-competition-modal {
-    max-width: 95%;
-    margin: 0.5rem;
-  }
-
-  .edit-competition-modal .modal-form {
-    grid-template-columns: 1fr;
-  }
-
-
-@media (min-width: 768px) and (max-width: 1024px) {
-  .setup-actions {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .competition-details {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Mobile responsive adjustments for delete button */
-@media (max-width: 767px) {
-  .competition-actions {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .edit-competition-btn,
-  .delete-competition-btn {
-    width: 100%;
-    padding: 0.7rem;
-  }
-}
-
-@media (max-width: 767px) {
-  .competition-actions {
-    justify-content: center;
-  }
-
-  .edit-competition-btn,
-  .delete-competition-btn,
-  .view-competition-btn {
-    width: 100%;
-    padding: 0.7rem;
-    margin-bottom: 0.5rem;
-  }
-}
-
-/* Ensure the background covers the entire mobile screen */
-@media (max-width: 767px) {
-  .setup-container {
-    min-height: 100vh;
-    background: radial-gradient(
-        circle at 10% 20%,
-        rgba(25, 50, 80, 0.7) 0%,
-        transparent 30%
-      ),
-      radial-gradient(
-        circle at 90% 80%,
-        rgba(80, 25, 80, 0.7) 0%,
-        transparent 30%
-      ),
-      linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%) fixed;
-    background-size: cover;
-  }
-}
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import CreateLeagueModal from "./components/CreateLeagueModal";
+import "./Setup.css";
+import { Link } from "react-router-dom";
+
+// 1. Import Firestore functions and the `db` object
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  orderBy,
+} from "firebase/firestore";
+import { db } from "./firebase"; // This import already exists and is correct
+
+// Define the Competition type
+interface Competition {
+  id: string; // Changed from number to string because Firestore uses string IDs
+  name: string;
+  type: string;
+  teams: number;
+  startDate: string;
+  status: string;
+  division?: string;
+}
+
+const competitionStatsConfig = [
+  { key: "playerName", label: "PN", description: "Player Name" },
+  { key: "matchesPlayed", label: "MP", description: "Matches Played" },
+  { key: "legsWon", label: "LW", description: "Legs Won" },
+  { key: "legsLost", label: "LL", description: "Legs Lost" },
+  { key: "tons", label: "100+", description: "Scores of 100+" },
+  { key: "ton80s", label: "180", description: "Scores of 180" },
+  { key: "dartsUsed", label: "DU", description: "Darts Used" },
+  { key: "winPercentage", label: "Win%", description: "Win Percentage" },
+  { key: "average", label: "Avg", description: "3-Dart Average" },
+];
+
+// 2. REMOVED the mockTeams array. We will fetch teams from Firestore.
+
+const Setup = () => {
+  const navigate = useNavigate();
+  // 3. Replace mock state with an empty array. It will be populated by Firestore.
+  const [leagues, setLeagues] = useState<Competition[]>([]);
+  const [isCreateLeagueModalOpen, setIsCreateLeagueModalOpen] = useState(false);
+  const [editingCompetition, setEditingCompetition] =
+    useState<Competition | null>(null);
+  const [deleteConfirmCompetition, setDeleteConfirmCompetition] =
+    useState<Competition | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    type: "league",
+    teams: 0,
+    startDate: "",
+    status: "Upcoming",
+    division: "Premier",
+  });
+
+  // 4. Fetch Competitions from Firestore when the component loads
+  useEffect(() => {
+    // Create a query against the 'competitions' collection, ordered by name
+    const q = query(collection(db, "competitions"), orderBy("name"));
+    // `onSnapshot` sets up a real-time listener. It runs now and every time the data changes.
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const competitionsData: Competition[] = [];
+      querySnapshot.forEach((doc) => {
+        // doc.data() is the object containing our competition data
+        const data = doc.data();
+        competitionsData.push({
+          id: doc.id, // Firestore's auto-generated ID
+          name: data.name,
+          type: data.type,
+          teams: data.teams,
+          startDate: data.startDate, // Ensure this is stored as a string in Firestore
+          status: data.status,
+          division: data.division,
+        });
+      });
+      setLeagues(competitionsData); // Update our state with the real data
+    });
+
+    // Return a cleanup function to unsubscribe from the listener when the component unmounts
+    return () => unsubscribe();
+  }, []); // The empty dependency array means this runs once on mount.
+
+  // Update edit form when competition changes
+  useEffect(() => {
+    if (editingCompetition) {
+      setEditFormData({
+        name: editingCompetition.name,
+        type: editingCompetition.type,
+        teams: editingCompetition.teams,
+        startDate: editingCompetition.startDate,
+        status: editingCompetition.status,
+        division: editingCompetition.division || "Premier",
+      });
+    }
+  }, [editingCompetition]);
+
+  const handleBackToAdmin = () => {
+    navigate("/admin");
+  };
+
+  const handleLogout = () => {
+    navigate("/");
+  };
+
+  const handleCreateLeague = () => {
+    setIsCreateLeagueModalOpen(true);
+  };
+
+  const handleCreateTournament = () => {
+    console.log("Create Tournament clicked");
+    // Will implement tournament creation functionality later
+  };
+
+  // 5. UPDATE: Save the new league to Firestore, not local state.
+  const handleLeagueCreation = async (leagueData: {
+    division: string;
+    startDate: Date;
+    teams: string[];
+  }) => {
+    try {
+      // Add a new document to the "competitions" collection
+      const docRef = await addDoc(collection(db, "competitions"), {
+        name: `${leagueData.division} League`,
+        type: "league",
+        teams: leagueData.teams.length,
+        startDate: leagueData.startDate.toISOString().split("T")[0], // Store as YYYY-MM-DD
+        status: "Upcoming",
+        division: leagueData.division,
+        // You might also want to store the actual team IDs here later:
+        // teamIds: leagueData.teams
+      });
+      console.log("League written with ID: ", docRef.id);
+
+      // The `onSnapshot` listener above will automatically detect this new document
+      // and update the `leagues` state, so we don't need to do it here.
+
+      // Reset form and close modal
+      setIsCreateLeagueModalOpen(false);
+    } catch (error) {
+      console.error("Error adding league: ", error);
+      alert("Failed to create league. Please try again.");
+    }
+  };
+
+  const handleEditCompetition = (competition: Competition) => {
+    setEditingCompetition(competition);
+  };
+
+  const handleDeleteCompetition = (competition: Competition) => {
+    setDeleteConfirmCompetition(competition);
+  };
+
+  // 6. UPDATE: Delete the competition from Firestore
+  const confirmDeleteCompetition = async () => {
+    if (deleteConfirmCompetition) {
+      try {
+        await deleteDoc(doc(db, "competitions", deleteConfirmCompetition.id));
+        // The `onSnapshot` listener will automatically update the `leagues` state.
+        setDeleteConfirmCompetition(null);
+      } catch (error) {
+        console.error("Error deleting competition: ", error);
+        alert("Failed to delete competition. Please try again.");
+      }
+    }
+  };
+
+  const handleEditInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setEditFormData({
+      ...editFormData,
+      [name]: name === "teams" ? parseInt(value) : value,
+    });
+  };
+
+  // 7. UPDATE: Save the edited competition to Firestore
+  const handleSaveEdit = async () => {
+    if (editingCompetition) {
+      try {
+        // Get a reference to the existing document
+        const competitionRef = doc(db, "competitions", editingCompetition.id);
+        // Update the document with the new form data
+        await updateDoc(competitionRef, { ...editFormData });
+        // The `onSnapshot` listener will automatically update the `leagues` state.
+        setEditingCompetition(null);
+      } catch (error) {
+        console.error("Error updating competition: ", error);
+        alert("Failed to update competition. Please try again.");
+      }
+    }
+  };
+
+  return (
+    <div className="setup-container">
+      <header className="setup-header">
+        <div className="header-left">
+          <button className="back-btn" onClick={handleBackToAdmin}>
+            <span className="back-text">Back to Admin</span>
+            <span className="back-arrow">←</span>
+          </button>
+        </div>
+
+        <h1>Setup</h1>
+
+        <div className="header-right">
+          <button className="logout-btn" onClick={handleLogout}>
+            <span className="logout-text">Log Out</span>
+            <span className="logout-icon">⎋</span>
+          </button>
+        </div>
+      </header>
+
+      <main className="setup-main">
+        {/* Action Tiles */}
+        <div className="setup-actions">
+          <div className="action-tile" onClick={handleCreateLeague}>
+            <h2>Create League</h2>
+            <p>Set up a new league competition</p>
+          </div>
+
+          <div className="action-tile" onClick={handleCreateTournament}>
+            <h2>Create Tournament</h2>
+            <p>Set up a knockout tournament</p>
+          </div>
+        </div>
+
+        {/* Competitions List */}
+        <div className="competitions-section">
+          <h2>Your Competitions</h2>
+
+          {leagues.length === 0 ? (
+            <p className="no-competitions">No competitions created yet</p>
+          ) : (
+            <div className="competitions-list">
+              {leagues.map((competition) => (
+                <div key={competition.id} className="competition-tile">
+                  <div className="competition-header">
+                    <h3>{competition.name}</h3>
+                    <span
+                      className={`status-badge ${competition.status.toLowerCase()}`}
+                    >
+                      {competition.status}
+                    </span>
+                  </div>
+
+                  <div className="competition-details">
+                    <div className="detail-item">
+                      <span className="detail-label">Type:</span>
+                      <span className="detail-value">{competition.type}</span>
+                    </div>
+
+                    <div className="detail-item">
+                      <span className="detail-label">Teams:</span>
+                      <span className="detail-value">{competition.teams}</span>
+                    </div>
+
+                    <div className="detail-item">
+                      <span className="detail-label">Start Date:</span>
+                      <span className="detail-value">
+                        {competition.startDate}
+                      </span>
+                    </div>
+
+                    {competition.division && (
+                      <div className="detail-item">
+                        <span className="detail-label">Division:</span>
+                        <span className="detail-value">
+                          {competition.division}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="competition-actions">
+                    <button
+                      className="edit-competition-btn"
+                      onClick={() => handleEditCompetition(competition)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="delete-competition-btn"
+                      onClick={() => handleDeleteCompetition(competition)}
+                    >
+                      Delete
+                    </button>
+                    <Link
+                      to={`/competition/${competition.id}`}
+                      state={{
+                        competitionName: competition.name,
+                        // This would come from your competition data
+                        statsConfig: competitionStatsConfig,
+                      }}
+                      className="view-competition-btn"
+                    >
+                      View League
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Create League Modal */}
+      <CreateLeagueModal
+        isOpen={isCreateLeagueModalOpen}
+        onClose={() => setIsCreateLeagueModalOpen(false)}
+        onCreateLeague={handleLeagueCreation}
+      />
+
+      {/* Edit Competition Modal */}
+      {editingCompetition && (
+        <div className="modal-overlay">
+          <div className="modal edit-competition-modal">
+            <div className="modal-header">
+              <h3>Edit {editingCompetition.name}</h3>
+              <button
+                className="modal-close"
+                onClick={() => setEditingCompetition(null)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="modal-content">
+              <form className="modal-form compact-form">
+                <div className="form-group">
+                  <label htmlFor="editName">Competition Name</label>
+                  <input
+                    type="text"
+                    id="editName"
+                    name="name"
+                    value={editFormData.name}
+                    onChange={handleEditInputChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="editType">Type</label>
+                  <select
+                    id="editType"
+                    name="type"
+                    value={editFormData.type}
+                    onChange={handleEditInputChange}
+                  >
+                    <option value="league">League</option>
+                    <option value="tournament">Tournament</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="editTeams">Number of Teams</label>
+                  <input
+                    type="number"
+                    id="editTeams"
+                    name="teams"
+                    value={editFormData.teams}
+                    onChange={handleEditInputChange}
+                    min="1"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="editStartDate">Start Date</label>
+                  <input
+                    type="date"
+                    id="editStartDate"
+                    name="startDate"
+                    value={editFormData.startDate}
+                    onChange={handleEditInputChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="editStatus">Status</label>
+                  <select
+                    id="editStatus"
+                    name="status"
+                    value={editFormData.status}
+                    onChange={handleEditInputChange}
+                  >
+                    <option value="Upcoming">Upcoming</option>
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+
+                {editingCompetition.division && (
+                  <div className="form-group">
+                    <label htmlFor="editDivision">Division</label>
+                    <select
+                      id="editDivision"
+                      name="division"
+                      value={editFormData.division}
+                      onChange={handleEditInputChange}
+                    >
+                      <option value="Upper Division">Upper Division</option>
+                      <option value="Lower Division">Lower Division</option>
+                      <option value="Premier">Premier</option>
+                      <option value="1st Division">1st Division</option>
+                      <option value="2nd Division">2nd Division</option>
+                      <option value="3rd Division">3rd Division</option>
+                    </select>
+                  </div>
+                )}
+              </form>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="modal-btn modal-cancel"
+                onClick={() => setEditingCompetition(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn modal-confirm"
+                onClick={handleSaveEdit}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmCompetition && (
+        <div className="modal-overlay">
+          <div className="modal delete-confirm-modal">
+            <div className="modal-header">
+              <h3>Confirm Delete</h3>
+              <button
+                className="modal-close"
+                onClick={() => setDeleteConfirmCompetition(null)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="modal-content">
+              <p>
+                Are you sure you want to delete{" "}
+                <strong>{deleteConfirmCompetition.name}</strong>?
+              </p>
+              <p>
+                This action cannot be undone and all associated data will be
+                permanently removed.
+              </p>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="modal-btn modal-cancel"
+                onClick={() => setDeleteConfirmCompetition(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn modal-delete"
+                onClick={confirmDeleteCompetition}
+              >
+                Delete Competition
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Setup;
