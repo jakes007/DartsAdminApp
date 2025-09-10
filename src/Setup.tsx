@@ -199,14 +199,20 @@ const Setup = () => {
   };
 
   return (
-    <div className="setup-container">
-      <header className="setup-header">
-        <div className="header-left">
-          <button className="back-btn" onClick={handleBackToAdmin}>
-            <span className="back-text">Back to Admin</span>
-            <span className="back-arrow">🏠</span>
-          </button>
-        </div>
+  <div className="setup-container">
+    <header className="setup-header">
+      <div className="header-left">
+        {/* Back to Admin (text only) */}
+        <button className="back-btn" onClick={handleBackToAdmin}>
+          <span className="back-text">Back to Admin</span>
+        </button>
+
+        {/* Home Button (icon + optional text) */}
+        <button className="home-btn" onClick={handleBackToAdmin}>
+          <span className="home-icon">🏠</span>
+          <span className="home-text">Home</span>
+        </button>
+      </div>
 
         <h1>Setup</h1>
 
