@@ -765,8 +765,10 @@ html,
 
   .back-arrow, .logout-icon {
   display: inline-flex;
-  align-items: center;
+  align-items: center;  /* vertical centering of icon inside span */
   justify-content: center;
+  line-height: 1;       /* prevents text icon from shifting down */
+  font-size: 1.2rem;    /* adjust to fit button size */
 }
 
   .club-edit-main {
