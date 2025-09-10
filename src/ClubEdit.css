@@ -751,26 +751,23 @@ html,
     justify-content: flex-end;
   }
 
-  .back-btn,
-  .logout-btn {
-    padding: 0.7rem;
-  }
+  .back-btn, .logout-btn {
+  display: flex;
+  align-items: center; /* vertical centering */
+  justify-content: center; /* horizontal centering */
+  padding: 0.7rem 1.5rem;
+}
 
   .back-text,
   .logout-text {
     display: none;
   }
 
-  .back-arrow,
-  .logout-icon {
-    display: block;
-    font-size: 1.3rem;
-  }
-
-  .logout-icon {
-    font-size: 1.5rem;
-    transform: rotate(90deg);
-  }
+  .back-arrow, .logout-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
   .club-edit-main {
     padding: 1.5rem 1rem 2rem;
