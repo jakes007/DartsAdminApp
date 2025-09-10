@@ -761,27 +761,43 @@ select:focus {
     text-align: center;
   }
 
-  .setup-header .back-btn,
-.setup-header .logout-btn {
+.back-btn,
+.logout-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
   display: flex;
-  align-items: center;       /* vertical centering */
-  justify-content: center;   /* horizontal centering */
-  gap: 0.5rem;               /* space between icon and text */
-  padding: 0.6rem 1.2rem;    /* adjust padding for consistent size */
-}
-
-  .back-text,
-  .logout-text {
-    display: none;
-  }
-
-  .setup-header .back-icon,
-.setup-header .logout-icon {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
-  font-size: 1.2rem;         /* adjust size to match theme */
+  padding: 0.7rem 1.5rem;
+}
+
+.back-btn {
+  color: #00ffff;
+  border: 1px solid #00ffff;
+}
+
+.back-btn:hover {
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+}
+
+.logout-btn {
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 107, 107, 0.2);
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
+}
+
+.back-arrow,
+.logout-icon {
+  display: none;
 }
 
   
