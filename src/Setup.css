@@ -1,487 +1,863 @@
+/* File: src/ClubEdit.css */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap");
 
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import CreateLeagueModal from "./components/CreateLeagueModal";
-import "./Setup.css";
-import { Link } from "react-router-dom";
-
-// 1. Import Firestore functions and the `db` object
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  query,
-  orderBy,
-} from "firebase/firestore";
-import { db } from "./firebase"; // This import already exists and is correct
-
-// Define the Competition type
-interface Competition {
-  id: string; // Changed from number to string because Firestore uses string IDs
-  name: string;
-  type: string;
-  teams: number;
-  startDate: string;
-  status: string;
-  division?: string;
+/* Ensure the background covers the entire screen */
+body,
+html,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
-const competitionStatsConfig = [
-  { key: "playerName", label: "PN", description: "Player Name" },
-  { key: "matchesPlayed", label: "MP", description: "Matches Played" },
-  { key: "legsWon", label: "LW", description: "Legs Won" },
-  { key: "legsLost", label: "LL", description: "Legs Lost" },
-  { key: "tons", label: "100+", description: "Scores of 100+" },
-  { key: "ton80s", label: "180", description: "Scores of 180" },
-  { key: "dartsUsed", label: "DU", description: "Darts Used" },
-  { key: "winPercentage", label: "Win%", description: "Win Percentage" },
-  { key: "average", label: "Avg", description: "3-Dart Average" },
-];
+.club-edit-container {
+  min-height: 100vh;
+  background: radial-gradient(
+      circle at 10% 20%,
+      rgba(25, 50, 80, 0.7) 0%,
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 90% 80%,
+      rgba(80, 25, 80, 0.7) 0%,
+      transparent 30%
+    ),
+    linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  color: #e0e0e0;
+  font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  padding: 0;
+}
 
-// 2. REMOVED the mockTeams array. We will fetch teams from Firestore.
+/* Header Styles - Fixed to top and full width */
+.club-edit-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
 
-const Setup = () => {
-  const navigate = useNavigate();
-  // 3. Replace mock state with an empty array. It will be populated by Firestore.
-  const [leagues, setLeagues] = useState<Competition[]>([]);
-  const [isCreateLeagueModalOpen, setIsCreateLeagueModalOpen] = useState(false);
-  const [editingCompetition, setEditingCompetition] =
-    useState<Competition | null>(null);
-  const [deleteConfirmCompetition, setDeleteConfirmCompetition] =
-    useState<Competition | null>(null);
-  const [editFormData, setEditFormData] = useState({
-    name: "",
-    type: "league",
-    teams: 0,
-    startDate: "",
-    status: "Upcoming",
-    division: "Premier",
-  });
+  /* padding only inside the header */
+  padding: 1.5rem 2rem;
 
-  // 4. Fetch Competitions from Firestore when the component loads
-  useEffect(() => {
-    // Create a query against the 'competitions' collection, ordered by name
-    const q = query(collection(db, "competitions"), orderBy("name"));
-    // `onSnapshot` sets up a real-time listener. It runs now and every time the data changes.
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const competitionsData: Competition[] = [];
-      querySnapshot.forEach((doc) => {
-        // doc.data() is the object containing our competition data
-        const data = doc.data();
-        competitionsData.push({
-          id: doc.id, // Firestore's auto-generated ID
-          name: data.name,
-          type: data.type,
-          teams: data.teams,
-          startDate: data.startDate, // Ensure this is stored as a string in Firestore
-          status: data.status,
-          division: data.division,
-        });
-      });
-      setLeagues(competitionsData); // Update our state with the real data
-    });
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+  margin-bottom: 2rem;
 
-    // Return a cleanup function to unsubscribe from the listener when the component unmounts
-    return () => unsubscribe();
-  }, []); // The empty dependency array means this runs once on mount.
+  width: 100%;
+  position: relative;
+  left: 0;
+  right: 0;
 
-  // Update edit form when competition changes
-  useEffect(() => {
-    if (editingCompetition) {
-      setEditFormData({
-        name: editingCompetition.name,
-        type: editingCompetition.type,
-        teams: editingCompetition.teams,
-        startDate: editingCompetition.startDate,
-        status: editingCompetition.status,
-        division: editingCompetition.division || "Premier",
-      });
-    }
-  }, [editingCompetition]);
+  /* ✅ ensures the header content doesn’t touch the edges */
+  box-sizing: border-box;
+}
 
-  const handleBackToAdmin = () => {
-    navigate("/admin");
-  };
+.club-edit-header h1 {
+  margin: 0;
+  font-family: "Orbitron", sans-serif;
+  color: #00ffff;
+  font-size: 2rem;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+  text-align: center;
+  grid-column: 2;
+}
 
-  const handleLogout = () => {
-    navigate("/");
-  };
+.header-left {
+  display: flex;
+  justify-content: flex-start;
+  grid-column: 1;
+}
 
-  const handleCreateLeague = () => {
-    setIsCreateLeagueModalOpen(true);
-  };
+.header-right {
+  display: flex;
+  justify-content: flex-end;
+  grid-column: 3;
+}
 
-  const handleCreateTournament = () => {
-    console.log("Create Tournament clicked");
-    // Will implement tournament creation functionality later
-  };
+.back-btn,
+.logout-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.5rem;
+}
 
-  // 5. UPDATE: Save the new league to Firestore, not local state.
-  const handleLeagueCreation = async (leagueData: {
-    division: string;
-    startDate: Date;
-    teams: string[];
-  }) => {
-    try {
-      // Add a new document to the "competitions" collection
-      const docRef = await addDoc(collection(db, "competitions"), {
-        name: `${leagueData.division} League`,
-        type: "league",
-        teams: leagueData.teams.length,
-        startDate: leagueData.startDate.toISOString().split("T")[0], // Store as YYYY-MM-DD
-        status: "Upcoming",
-        division: leagueData.division,
-        // You might also want to store the actual team IDs here later:
-        // teamIds: leagueData.teams
-      });
-      console.log("League written with ID: ", docRef.id);
+.back-btn {
+  color: #00ffff;
+  border: 1px solid #00ffff;
+}
 
-      // The `onSnapshot` listener above will automatically detect this new document
-      // and update the `leagues` state, so we don't need to do it here.
+.back-btn:hover {
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+}
 
-      // Reset form and close modal
-      setIsCreateLeagueModalOpen(false);
-    } catch (error) {
-      console.error("Error adding league: ", error);
-      alert("Failed to create league. Please try again.");
-    }
-  };
+.logout-btn {
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+}
 
-  const handleEditCompetition = (competition: Competition) => {
-    setEditingCompetition(competition);
-  };
+.logout-btn:hover {
+  background: rgba(255, 107, 107, 0.2);
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
+}
 
-  const handleDeleteCompetition = (competition: Competition) => {
-    setDeleteConfirmCompetition(competition);
-  };
+.back-arrow,
+.logout-icon {
+  display: none;
+}
 
-  // 6. UPDATE: Delete the competition from Firestore
-  const confirmDeleteCompetition = async () => {
-    if (deleteConfirmCompetition) {
-      try {
-        await deleteDoc(doc(db, "competitions", deleteConfirmCompetition.id));
-        // The `onSnapshot` listener will automatically update the `leagues` state.
-        setDeleteConfirmCompetition(null);
-      } catch (error) {
-        console.error("Error deleting competition: ", error);
-        alert("Failed to delete competition. Please try again.");
-      }
-    }
-  };
+.club-edit-main {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
 
-  const handleEditInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setEditFormData({
-      ...editFormData,
-      [name]: name === "teams" ? parseInt(value) : value,
-    });
-  };
+/* Registration Tile - Added margin-top for spacing */
+.register-tile {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  margin-bottom: 2rem;
+  margin-top: 1.5rem; /* Added space between header and content */
+  transition: all 0.4s ease;
+}
 
-  // 7. UPDATE: Save the edited competition to Firestore
-  const handleSaveEdit = async () => {
-    if (editingCompetition) {
-      try {
-        // Get a reference to the existing document
-        const competitionRef = doc(db, "competitions", editingCompetition.id);
-        // Update the document with the new form data
-        await updateDoc(competitionRef, { ...editFormData });
-        // The `onSnapshot` listener will automatically update the `leagues` state.
-        setEditingCompetition(null);
-      } catch (error) {
-        console.error("Error updating competition: ", error);
-        alert("Failed to update competition. Please try again.");
-      }
-    }
-  };
+.register-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 25px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 200, 255, 0.4);
+}
 
-  return (
-    <div className="setup-container">
-      <header className="setup-header">
-        <div className="header-left">
-          <button className="back-btn" onClick={handleBackToAdmin}>
-            <span className="back-text">Back to Admin</span>
-            <span className="back-arrow">←</span>
-          </button>
-        </div>
+.register-tile h2 {
+  font-family: "Orbitron", sans-serif;
+  color: #00ffff;
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+}
 
-        <h1>Setup</h1>
+.register-form {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
 
-        <div className="header-right">
-          <button className="logout-btn" onClick={handleLogout}>
-            <span className="logout-text">Log Out</span>
-            <span className="logout-icon">⎋</span>
-          </button>
-        </div>
-      </header>
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
 
-      <main className="setup-main">
-        {/* Action Tiles */}
-        <div className="setup-actions">
-          <div className="action-tile" onClick={handleCreateLeague}>
-            <h2>Create League</h2>
-            <p>Set up a new league competition</p>
-          </div>
+.form-group label {
+  margin-bottom: 0.8rem;
+  font-weight: 500;
+  text-align: center;
+}
 
-          <div className="action-tile" onClick={handleCreateTournament}>
-            <h2>Create Tournament</h2>
-            <p>Set up a knockout tournament</p>
-          </div>
-        </div>
+.form-group input {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 0.8rem;
+  color: white;
+  font-family: "Inter", sans-serif;
+  transition: all 0.3s ease;
+}
 
-        {/* Competitions List */}
-        <div className="competitions-section">
-          <h2>Your Competitions</h2>
+.form-group input:focus {
+  outline: none;
+  border-color: #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
 
-          {leagues.length === 0 ? (
-            <p className="no-competitions">No competitions created yet</p>
-          ) : (
-            <div className="competitions-list">
-              {leagues.map((competition) => (
-                <div key={competition.id} className="competition-tile">
-                  <div className="competition-header">
-                    <h3>{competition.name}</h3>
-                    <span
-                      className={`status-badge ${competition.status.toLowerCase()}`}
-                    >
-                      {competition.status}
-                    </span>
-                  </div>
+.register-button {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, #00ffff, #0088ff);
+  color: #0a0a0a;
+  border: none;
+  border-radius: 6px;
+  padding: 1rem;
+  font-family: "Orbitron", sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
 
-                  <div className="competition-details">
-                    <div className="detail-item">
-                      <span className="detail-label">Type:</span>
-                      <span className="detail-value">{competition.type}</span>
-                    </div>
+.register-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 255, 255, 0.5);
+}
 
-                    <div className="detail-item">
-                      <span className="detail-label">Teams:</span>
-                      <span className="detail-value">{competition.teams}</span>
-                    </div>
+/* Summary Tiles */
+.summary-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
 
-                    <div className="detail-item">
-                      <span className="detail-label">Start Date:</span>
-                      <span className="detail-value">
-                        {competition.startDate}
-                      </span>
-                    </div>
+.summary-tile {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
 
-                    {competition.division && (
-                      <div className="detail-item">
-                        <span className="detail-label">Division:</span>
-                        <span className="detail-value">
-                          {competition.division}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+.summary-tile.clickable {
+  cursor: pointer;
+}
 
-                  <div className="competition-actions">
-                    <button
-                      className="edit-competition-btn"
-                      onClick={() => handleEditCompetition(competition)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="delete-competition-btn"
-                      onClick={() => handleDeleteCompetition(competition)}
-                    >
-                      Delete
-                    </button>
-                    <Link
-                      to={`/competition/${competition.id}`}
-                      state={{
-                        competitionName: competition.name,
-                        // This would come from your competition data
-                        statsConfig: competitionStatsConfig,
-                      }}
-                      className="view-competition-btn"
-                    >
-                      View League
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </main>
+.summary-tile.clickable:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
 
-      {/* Create League Modal */}
-      <CreateLeagueModal
-        isOpen={isCreateLeagueModalOpen}
-        onClose={() => setIsCreateLeagueModalOpen(false)}
-        onCreateLeague={handleLeagueCreation}
-      />
+.summary-tile:nth-child(1):hover {
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
+}
+.summary-tile:nth-child(2):hover {
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+}
+.summary-tile:nth-child(3):hover {
+  box-shadow: 0 0 15px rgba(255, 255, 0, 0.7);
+}
+.summary-tile:nth-child(4):hover {
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.7);
+}
 
-      {/* Edit Competition Modal */}
-      {editingCompetition && (
-        <div className="modal-overlay">
-          <div className="modal edit-competition-modal">
-            <div className="modal-header">
-              <h3>Edit {editingCompetition.name}</h3>
-              <button
-                className="modal-close"
-                onClick={() => setEditingCompetition(null)}
-              >
-                ×
-              </button>
-            </div>
+.summary-tile h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
 
-            <div className="modal-content">
-              <form className="modal-form compact-form">
-                <div className="form-group">
-                  <label htmlFor="editName">Competition Name</label>
-                  <input
-                    type="text"
-                    id="editName"
-                    name="name"
-                    value={editFormData.name}
-                    onChange={handleEditInputChange}
-                    required
-                  />
-                </div>
+.summary-count {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  color: #00ffff;
+  font-family: "Orbitron", sans-serif;
+}
 
-                <div className="form-group">
-                  <label htmlFor="editType">Type</label>
-                  <select
-                    id="editType"
-                    name="type"
-                    value={editFormData.type}
-                    onChange={handleEditInputChange}
-                  >
-                    <option value="league">League</option>
-                    <option value="tournament">Tournament</option>
-                  </select>
-                </div>
+/* Clubs List Tile */
+.clubs-list-tile {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
 
-                <div className="form-group">
-                  <label htmlFor="editTeams">Number of Teams</label>
-                  <input
-                    type="number"
-                    id="editTeams"
-                    name="teams"
-                    value={editFormData.teams}
-                    onChange={handleEditInputChange}
-                    min="1"
-                    required
-                  />
-                </div>
+.clubs-list-tile h2 {
+  font-family: "Orbitron", sans-serif;
+  color: #00ffff;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+}
 
-                <div className="form-group">
-                  <label htmlFor="editStartDate">Start Date</label>
-                  <input
-                    type="date"
-                    id="editStartDate"
-                    name="startDate"
-                    value={editFormData.startDate}
-                    onChange={handleEditInputChange}
-                    required
-                  />
-                </div>
+.no-clubs {
+  text-align: center;
+  opacity: 0.7;
+  font-style: italic;
+}
 
-                <div className="form-group">
-                  <label htmlFor="editStatus">Status</label>
-                  <select
-                    id="editStatus"
-                    name="status"
-                    value={editFormData.status}
-                    onChange={handleEditInputChange}
-                  >
-                    <option value="Upcoming">Upcoming</option>
-                    <option value="Active">Active</option>
-                    <option value="Completed">Completed</option>
-                  </select>
-                </div>
+.club-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-                {editingCompetition.division && (
-                  <div className="form-group">
-                    <label htmlFor="editDivision">Division</label>
-                    <select
-                      id="editDivision"
-                      name="division"
-                      value={editFormData.division}
-                      onChange={handleEditInputChange}
-                    >
-                      <option value="Upper Division">Upper Division</option>
-                      <option value="Lower Division">Lower Division</option>
-                      <option value="Premier">Premier</option>
-                      <option value="1st Division">1st Division</option>
-                      <option value="2nd Division">2nd Division</option>
-                      <option value="3rd Division">3rd Division</option>
-                    </select>
-                  </div>
-                )}
-              </form>
-            </div>
+.club-item:last-child {
+  border-bottom: none;
+}
 
-            <div className="modal-actions">
-              <button
-                className="modal-btn modal-cancel"
-                onClick={() => setEditingCompetition(null)}
-              >
-                Cancel
-              </button>
-              <button
-                className="modal-btn modal-confirm"
-                onClick={handleSaveEdit}
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+.club-info h3 {
+  margin: 0 0 0.5rem;
+  color: #00ffff;
+}
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirmCompetition && (
-        <div className="modal-overlay">
-          <div className="modal delete-confirm-modal">
-            <div className="modal-header">
-              <h3>Confirm Delete</h3>
-              <button
-                className="modal-close"
-                onClick={() => setDeleteConfirmCompetition(null)}
-              >
-                ×
-              </button>
-            </div>
+.club-info p {
+  margin: 0;
+  opacity: 0.8;
+}
 
-            <div className="modal-content">
-              <p>
-                Are you sure you want to delete{" "}
-                <strong>{deleteConfirmCompetition.name}</strong>?
-              </p>
-              <p>
-                This action cannot be undone and all associated data will be
-                permanently removed.
-              </p>
-            </div>
+.view-teams-link {
+  background: none;
+  border: none;
+  color: #00ffff;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  padding: 0;
+  display: block;
+}
 
-            <div className="modal-actions">
-              <button
-                className="modal-btn modal-cancel"
-                onClick={() => setDeleteConfirmCompetition(null)}
-              >
-                Cancel
-              </button>
-              <button
-                className="modal-btn modal-delete"
-                onClick={confirmDeleteCompetition}
-              >
-                Delete Competition
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+.view-teams-link:hover {
+  color: #00aaff;
+}
 
-export default Setup;
+.club-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.edit-btn {
+  background: rgba(0, 255, 255, 0.2);
+  color: #00ffff;
+}
+
+.edit-btn:hover:not(.disabled) {
+  background: rgba(0, 255, 255, 0.3);
+}
+
+.delete-btn {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+}
+
+.delete-btn:hover:not(.disabled) {
+  background: rgba(255, 107, 107, 0.3);
+}
+
+.add-team-btn,
+.add-player-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+}
+
+.add-team-btn:hover:not(.disabled),
+.add-player-btn:hover:not(.disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 16px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 200, 255, 0.2);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  color: #e0e0e0;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.modal-header h3 {
+  font-family: "Orbitron", sans-serif;
+  color: #00ffff;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: #ff6b6b;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 107, 107, 0.2);
+}
+
+.modal-content {
+  padding: 1.5rem;
+}
+
+/* Compact form styling */
+.modal-form.compact-form {
+  margin-bottom: 1.5rem;
+}
+
+.modal-form.compact-form .form-group {
+  margin-bottom: 1.2rem;
+}
+
+.modal-form.compact-form .form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+.modal-form.compact-form .form-group input,
+.modal-form.compact-form .form-group select {
+  width: 100%;
+  padding: 0.7rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: white;
+  font-family: "Inter", sans-serif;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.modal-form.compact-form .form-group input:focus,
+.modal-form.compact-form .form-group select:focus {
+  outline: none;
+  border-color: #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.modal-form.compact-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.teams-list,
+.players-list {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.teams-list h4,
+.players-list h4 {
+  margin-top: 0;
+  color: #00ffff;
+  font-family: "Orbitron", sans-serif;
+}
+
+.team-item,
+.player-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.remove-item-btn {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: none;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.remove-item-btn:hover {
+  background: rgba(255, 107, 107, 0.3);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.modal-btn {
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-cancel:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-confirm {
+  background: linear-gradient(135deg, #00ffff, #0088ff);
+  color: #0a0a0a;
+  border: none;
+  font-weight: 600;
+}
+
+.modal-confirm:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 255, 255, 0.5);
+}
+
+.modal-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.add-another-btn {
+  background: rgba(0, 255, 255, 0.1);
+  color: #00ffff;
+  border: 1px solid #00ffff;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.add-another-btn:hover {
+  background: rgba(0, 255, 255, 0.2);
+}
+
+/* View Teams Modal Specific Styles */
+.view-teams-modal .modal-content {
+  padding: 0;
+}
+
+.divisions-list {
+  padding: 1rem;
+}
+
+.division-group {
+  margin-bottom: 2rem;
+}
+
+.division-group h4 {
+  color: #00ffff;
+  font-family: "Orbitron", sans-serif;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-section {
+  margin-bottom: 1.5rem;
+  padding-left: 1rem;
+}
+
+.team-subtitle {
+  color: #ff6b6b;
+  font-family: "Orbitron", sans-serif;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.players-container {
+  margin-left: 1rem;
+}
+
+.player-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.player-row.on-loan {
+  background-color: rgba(255, 215, 0, 0.1);
+  border-left: 3px solid gold;
+}
+
+.player-info {
+  flex: 1;
+}
+
+.loan-info {
+  color: gold;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.player-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-player-btn,
+.delete-player-btn,
+.loan-player-btn,
+.return-player-btn {
+  background: none;
+  border: none;
+  color: #00ffff;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.delete-player-btn {
+  color: #ff6b6b;
+}
+
+.loan-player-btn {
+  color: #ffa500;
+}
+
+.return-player-btn {
+  color: #32cd32;
+}
+
+.edit-player-btn:hover,
+.delete-player-btn:hover,
+.loan-player-btn:hover,
+.return-player-btn:hover {
+  opacity: 0.8;
+}
+
+.no-players {
+  font-style: italic;
+  opacity: 0.7;
+  margin-left: 1rem;
+}
+
+/* Loaned Players Modal */
+.loaned-players-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.loaned-player-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid gold;
+}
+
+.loaned-player-info h4 {
+  margin: 0 0 0.5rem;
+  color: gold;
+}
+
+.loaned-player-info p {
+  margin: 0.2rem 0;
+  opacity: 0.8;
+}
+
+.loaned-player-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.no-loaned-players {
+  text-align: center;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 767px) {
+  .club-edit-header {
+    padding: 1rem;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem;
+  }
+
+  .club-edit-header h1 {
+    font-size: 1.5rem;
+    grid-column: 2;
+    text-align: center;
+  }
+
+  .header-left {
+    grid-column: 1;
+    justify-content: flex-start;
+  }
+
+  .header-right {
+    grid-column: 3;
+    justify-content: flex-end;
+  }
+
+  .back-btn,
+  .logout-btn {
+    padding: 0.7rem;
+  }
+
+  .back-text,
+  .logout-text {
+    display: none;
+  }
+
+  .back-arrow,
+  .logout-icon {
+    display: block;
+    font-size: 1.3rem;
+  }
+
+  .logout-icon {
+    font-size: 1.5rem;
+    transform: rotate(90deg);
+  }
+
+  .club-edit-main {
+    padding: 1.5rem 1rem 2rem;
+  }
+
+  .register-form {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .club-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .club-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  /* Mobile modal fixes */
+  .modal {
+    max-width: 95%;
+    margin: 0.5rem;
+  }
+
+  .modal-form.compact-form .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .player-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .player-actions {
+    align-self: flex-end;
+  }
+
+  .loaned-player-item {
+    padding: 0.8rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .register-form {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .summary-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .modal {
+    max-width: 90%;
+  }
+}
+
+/* Ensure the background covers the entire mobile screen */
+@media (max-width: 767px) {
+  .club-edit-container {
+    min-height: 100vh;
+    background: radial-gradient(
+        circle at 10% 20%,
+        rgba(25, 50, 80, 0.7) 0%,
+        transparent 30%
+      ),
+      radial-gradient(
+        circle at 90% 80%,
+        rgba(80, 25, 80, 0.7) 0%,
+        transparent 30%
+      ),
+      linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%) fixed;
+    background-size: cover;
+  }
+}
