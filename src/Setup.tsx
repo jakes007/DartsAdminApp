@@ -201,18 +201,14 @@ const Setup = () => {
   return (
   <div className="setup-container">
     <header className="setup-header">
-      <div className="header-left">
-        {/* Back to Admin (text only) */}
-        <button className="back-btn" onClick={handleBackToAdmin}>
-          <span className="back-text">Back to Admin</span>
-        </button>
-
-        {/* Home Button (icon + optional text) */}
-        <button className="home-btn" onClick={handleBackToAdmin}>
-          <span className="home-icon">🏠</span>
-          <span className="home-text">Home</span>
-        </button>
-      </div>
+    <div className="header-left">
+    <button className="back-btn" onClick={handleBackToAdmin}>
+      {/* Mobile icon */}
+      <span className="back-arrow">🏠</span> 
+      {/* Optional: keep text hidden on mobile */}
+      <span className="back-text">Back to Admin</span>
+    </button>
+  </div>
 
         <h1>Setup</h1>
 
