@@ -85,13 +85,14 @@ const Setup = () => {
   const handleLeagueCreation = async (leagueData: {
     division: string;
     startDate: Date;
-    teams: string[];
+    teams: string[]; // This contains the team IDs
   }) => {
     try {
       const docRef = await addDoc(collection(db, "competitions"), {
         name: `${leagueData.division} League`,
         type: "league",
         teams: leagueData.teams.length,
+        teamIds: leagueData.teams, // ✅ Store the actual team IDs
         startDate: leagueData.startDate.toISOString().split("T")[0],
         status: "Upcoming",
         division: leagueData.division,

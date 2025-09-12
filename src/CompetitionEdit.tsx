@@ -4,11 +4,23 @@ import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } 
 import { db } from "./firebase";
 import "./CompetitionEdit.css";
 
+// ✅ Add this interface definition
+interface Competition {
+  id: string;
+  name: string;
+  type: string;
+  teams: number;
+  teamIds?: string[];
+  startDate: string;
+  status: string;
+  division?: string;
+}
+
 const CompetitionEdit = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [competition, setCompetition] = useState<any>(null);
+  const [competition, setCompetition] = useState<Competition | null>(null);
   const [teams, setTeams] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -20,49 +32,72 @@ const CompetitionEdit = () => {
   });
 
   // Fetch competition data
-  useEffect(() => {
-    const fetchCompetition = async () => {
-      if (!id) return;
+  // Replace the team fetching logic in the useEffect:
+useEffect(() => {
+  const fetchCompetition = async () => {
+    if (!id) return;
+    
+    try {
+      const docRef = doc(db, "competitions", id);
+      const docSnap = await getDoc(docRef);
       
-      try {
-        const docRef = doc(db, "competitions", id);
-        const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setCompetition({ 
+          id: docSnap.id, 
+          name: data.name || "",
+          type: data.type || "league",
+          teams: data.teams || 0,
+          startDate: data.startDate || "",
+          status: data.status || "Upcoming",
+          division: data.division || "Premier",
+          teamIds: data.teamIds || [] // Add this too
+        });
+        setFormData({
+          name: data.name || "",
+          type: data.type || "league",
+          teams: data.teams || 0,
+          startDate: data.startDate || "",
+          status: data.status || "Upcoming",
+          division: data.division || "Premier"
+        });
         
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setCompetition({ id: docSnap.id, ...data });
-          setFormData({
-            name: data.name || "",
-            type: data.type || "league",
-            teams: data.teams || 0,
-            startDate: data.startDate || "",
-            status: data.status || "Upcoming",
-            division: data.division || "Premier"
-          });
-          
-          // Fetch teams in this competition (based on division)
-          if (data.division) {
-            const teamsQuery = query(
-              collection(db, "teams"), 
-              where("division", "==", data.division)
-            );
-            const teamsSnapshot = await getDocs(teamsQuery);
-            const teamsData = teamsSnapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data()
-            }));
-            setTeams(teamsData);
+        // ✅ Fetch the ACTUAL teams in this competition using teamIds
+        if (data.teamIds && data.teamIds.length > 0) {
+          const teamsData = [];
+          for (const teamId of data.teamIds) {
+            const teamDoc = await getDoc(doc(db, "teams", teamId));
+            if (teamDoc.exists()) {
+              teamsData.push({
+                id: teamDoc.id,
+                ...teamDoc.data()
+              });
+            }
           }
+          setTeams(teamsData);
+        } else if (data.division) {
+          // Fallback: fetch by division (for old competitions without teamIds)
+          const teamsQuery = query(
+            collection(db, "teams"), 
+            where("division", "==", data.division)
+          );
+          const teamsSnapshot = await getDocs(teamsQuery);
+          const teamsData = teamsSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          setTeams(teamsData);
         }
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching competition:", error);
-        setLoading(false);
       }
-    };
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching competition:", error);
+      setLoading(false);
+    }
+  };
 
-    fetchCompetition();
-  }, [id]);
+  fetchCompetition();
+}, [id]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -77,7 +112,11 @@ const CompetitionEdit = () => {
     
     try {
       const docRef = doc(db, "competitions", id);
-      await updateDoc(docRef, formData);
+      // ✅ Preserve the existing teamIds when updating other fields
+      await updateDoc(docRef, {
+        ...formData,
+        teamIds: competition?.teamIds || [] // Keep existing team IDs
+      });
       navigate("/setup");
     } catch (error) {
       console.error("Error updating competition:", error);
@@ -86,16 +125,29 @@ const CompetitionEdit = () => {
   };
 
   const handleDeleteTeam = async (teamId: string) => {
-    if (!window.confirm("Are you sure you want to delete this team from the competition?")) {
+    if (!window.confirm("Are you sure you want to remove this team from the competition?")) {
       return;
     }
     
     try {
-      await deleteDoc(doc(db, "teams", teamId));
-      setTeams(prev => prev.filter(team => team.id !== teamId));
+      if (competition?.teamIds) {
+        const updatedTeamIds = competition.teamIds.filter((id: string) => id !== teamId);
+        
+        await updateDoc(doc(db, "competitions", competition.id), {
+          teamIds: updatedTeamIds,
+          teams: updatedTeamIds.length
+        });
+        
+        setTeams(prev => prev.filter(team => team.id !== teamId));
+        setCompetition((prev: Competition | null) => prev ? {
+          ...prev,
+          teamIds: updatedTeamIds,
+          teams: updatedTeamIds.length
+        } : null);
+      }
     } catch (error) {
-      console.error("Error deleting team:", error);
-      alert("Failed to delete team. Please try again.");
+      console.error("Error removing team from competition:", error);
+      alert("Failed to remove team from competition. Please try again.");
     }
   };
 
