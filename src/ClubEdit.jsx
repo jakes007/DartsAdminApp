@@ -134,7 +134,8 @@ const ClubEdit = () => {
   
         // 4. If a club was found, show an alert and STOP the function
         if (existingClub) {
-          alert(`A club with the name "${newClub.name}" is already registered.`);
+          setWarningMessage(`A club with the name "${newClub.name}" is already registered.`);
+setShowWarningModal(true);
           return; // This stops the function here, nothing else happens.
         }
         // --- END OF NEW CHECK ---
@@ -246,7 +247,8 @@ const ClubEdit = () => {
   
         // If a team was found, show an alert and STOP the function
         if (existingTeam) {
-          alert(`A team with the name "${teamForm.name}" is already registered.`);
+          setWarningMessage(`A team with the name "${teamForm.name}" is already registered.`);
+setShowWarningModal(true);
           return; // This stops the function here.
         }
         // --- END OF NEW CHECK ---
@@ -367,6 +369,8 @@ const ClubEdit = () => {
     team: "",
   });
   const [availableTeams, setAvailableTeams] = useState([]);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+const [warningMessage, setWarningMessage] = useState("");
 
   // --- League handlers ---
   const handleDivisionChange = async (e) => {
@@ -1269,8 +1273,37 @@ const ClubEdit = () => {
           </div>
         </div>
       )}
+      {/* Duplicate Warning Modal */}
+{showWarningModal && (
+  <div className="modal-overlay">
+    <div className="modal">
+      <div className="modal-header">
+        <h3>Duplicate Entry</h3>
+        <button
+          className="modal-close"
+          onClick={() => setShowWarningModal(false)}
+        >
+          ×
+        </button>
+      </div>
+      <div className="modal-content">
+        <p>{warningMessage}</p>
+      </div>
+      <div className="modal-actions">
+        <button
+          className="modal-btn modal-confirm"
+          onClick={() => setShowWarningModal(false)}
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };
+
+
 
 export default ClubEdit;

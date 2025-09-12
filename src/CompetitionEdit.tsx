@@ -369,18 +369,21 @@ const CompetitionEdit = () => {
             <div className="form-group">
               <label htmlFor="teamSelect">Team</label>
               <select
-                id="teamSelect"
-                value={selectedTeam}
-                onChange={(e) => setSelectedTeam(e.target.value)}
-                disabled={!selectedDivision}
-              >
-                <option value="">Select Team</option>
-                {filteredTeams.map(team => (
-                  <option key={team.id} value={team.id}>
-                    {team.name}
-                  </option>
-                ))}
-              </select>
+  id="teamSelect"
+  value={selectedTeam}
+  onChange={(e) => setSelectedTeam(e.target.value)}
+  disabled={!selectedDivision}
+>
+  <option value="">Select Team</option>
+  {filteredTeams
+    .filter(team => !competition?.teamIds?.includes(team.id)) // This line filters out already added teams
+    .map(team => (
+      <option key={team.id} value={team.id}>
+        {team.name}
+      </option>
+    ))
+  }
+</select>
             </div>
             
             <button
