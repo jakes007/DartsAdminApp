@@ -227,6 +227,13 @@ const Setup = () => {
                     >
                       View League
                     </Link>
+
+                    <Link
+  to={`/create-fixture/${competition.id}`}
+  className="create-fixture-btn"
+>
+  Create Fixtures
+</Link>
                   </div>
                 </div>
               ))}

@@ -159,7 +159,7 @@ const CompetitionStats = () => {
           </button>
         </div>
 
-        <h1>{competitionName} - Statistics</h1>
+        <h1>{competitionName} - Stats</h1>
 
         <div className="header-right">{/* Empty for balance */}</div>
       </header>

@@ -6,6 +6,7 @@ import ClubEdit from "./ClubEdit.jsx";
 import Setup from "./Setup";
 import CompetitionStats from "./CompetitionStats";
 import CompetitionEdit from "./CompetitionEdit"; // Add this import
+import CreateFixture from "./CreateFixture";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/setup" element={<Setup />} />
           <Route path="/competition/:id" element={<CompetitionStats />} />
           <Route path="/edit-competition/:id" element={<CompetitionEdit />} /> {/* Add this route */}
+          <Route path="/create-fixture/:id" element={<CreateFixture />} />
         </Routes>
       </div>
     </Router>

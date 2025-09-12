@@ -883,6 +883,26 @@ select:focus {
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.3) !important;
 }
 
+.create-fixture-btn {
+  background: rgba(255, 215, 0, 0.2);
+  color: #ffd700;
+  border: 1px solid #ffd700;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  text-align: center;
+  display: inline-block;
+}
+
+.create-fixture-btn:hover {
+  background: rgba(255, 215, 0, 0.3);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
 /* Mobile Responsive Styles */
 @media (max-width: 767px) {
   .setup-header {
