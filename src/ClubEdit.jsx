@@ -12,6 +12,7 @@ import {
   query,
   where,
   getDocs,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import "./ClubEdit.css";
@@ -70,22 +71,47 @@ const ClubEdit = () => {
 
   // Load clubs from Firestore
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "clubs"), (snapshot) => {
+    const unsubscribe = onSnapshot(collection(db, "clubs"), async (snapshot) => {
       const clubsData = [];
-      snapshot.forEach((doc) => {
+      
+      for (const doc of snapshot.docs) {
         const data = doc.data();
+        
+        // Fetch teams for this club
+        const teamsQuery = query(
+          collection(db, "teams"),
+          where("clubId", "==", doc.id)
+        );
+        const teamsSnapshot = await getDocs(teamsQuery);
+        const teams = teamsSnapshot.docs.map(teamDoc => ({
+          id: teamDoc.id,
+          ...teamDoc.data()
+        }));
+        
+        // Fetch players for this club
+        const playersQuery = query(
+          collection(db, "players"),
+          where("clubId", "==", doc.id)
+        );
+        const playersSnapshot = await getDocs(playersQuery);
+        const players = playersSnapshot.docs.map(playerDoc => ({
+          id: playerDoc.id,
+          ...playerDoc.data()
+        }));
+        
         clubsData.push({
           id: doc.id,
           name: data.name || "",
           email: data.email || "",
           code: data.code || "",
-          teams: data.teams || [],
-          players: data.players || [],
+          teams: teams,
+          players: players,
         });
-      });
+      }
+      
       setClubs(clubsData);
     });
-
+  
     return () => unsubscribe();
   }, []);
 
@@ -164,11 +190,69 @@ setShowWarningModal(true);
 
   const handleDeleteClub = async (id) => {
     try {
-      await deleteDoc(doc(db, "clubs", id));
+      const batch = writeBatch(db);
+      
+      // 1. First, find all teams that belong to this club
+      const teamsQuery = query(
+        collection(db, "teams"),
+        where("clubId", "==", id)
+      );
+      const teamsSnapshot = await getDocs(teamsQuery);
+      const teamIdsToDelete = teamsSnapshot.docs.map(doc => doc.id); // Store team IDs for later
+      
+      // 2. For each team, find and delete all players, then delete the team
+      for (const teamDoc of teamsSnapshot.docs) {
+        const teamId = teamDoc.id;
+        
+        // Find all players in this team
+        const playersQuery = query(
+          collection(db, "players"),
+          where("clubId", "==", id),
+          where("team", "==", teamDoc.data().name)
+        );
+        const playersSnapshot = await getDocs(playersQuery);
+        
+        // Add all players to the batch for deletion
+        playersSnapshot.forEach((playerDoc) => {
+          batch.delete(doc(db, "players", playerDoc.id));
+        });
+        
+        // Add the team to the batch for deletion
+        batch.delete(doc(db, "teams", teamId));
+      }
+      
+      // 3. Find all competitions that include these teams and update them
+      const competitionsQuery = query(collection(db, "competitions"));
+      const competitionsSnapshot = await getDocs(competitionsQuery);
+      
+      competitionsSnapshot.forEach((competitionDoc) => {
+        const competitionData = competitionDoc.data();
+        if (competitionData.teamIds && competitionData.teamIds.length > 0) {
+          // Filter out the teams we're deleting
+          const updatedTeamIds = competitionData.teamIds.filter(
+            teamId => !teamIdsToDelete.includes(teamId)
+          );
+          
+          // Only update if the competition actually had teams we're deleting
+          if (updatedTeamIds.length !== competitionData.teamIds.length) {
+            batch.update(doc(db, "competitions", competitionDoc.id), {
+              teamIds: updatedTeamIds,
+              teams: updatedTeamIds.length
+            });
+          }
+        }
+      });
+      
+      // 4. Finally, delete the club itself
+      batch.delete(doc(db, "clubs", id));
+      
+      // 5. Commit all operations at once
+      await batch.commit();
+      
       setDeleteConfirmClub(null);
     } catch (error) {
-      console.error("Error deleting club: ", error);
-      alert("Failed to delete club. Please try again.");
+      console.error("Error deleting club and associated data: ", error);
+      alert("Failed to delete club and associated data. Please try again.");
     }
   };
 

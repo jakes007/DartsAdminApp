@@ -391,25 +391,27 @@ const CreateLeagueModal = ({
                         ? "No teams in this division."
                         : "Please select a division first."}
                     </div>
+                  ) : availableTeams.filter(team => !selectedTeams.includes(team.id)).length === 0 ? (
+                    <div className="no-teams-message">
+                      All available teams have been selected.
+                    </div>
                   ) : (
-                    availableTeams.map((team) => (
-                      <div
-                        key={team.id}
-                        className={`team-dropdown-item ${
-                          selectedTeams.includes(team.id) ? "selected" : ""
-                        }`}
-                        onClick={() => handleTeamSelect(team.id)}
-                      >
-                        <span className="team-checkbox">
-                          {selectedTeams.includes(team.id) && (
-                            <span className="checkmark">✓</span>
-                          )}
-                        </span>
-                        <span className="team-name">
-                          {team.name} ({team.division})
-                        </span>
-                      </div>
-                    ))
+                    availableTeams
+  .filter(team => !selectedTeams.includes(team.id)) // This line filters out selected teams
+  .map((team) => (
+    <div
+      key={team.id}
+      className="team-dropdown-item"
+      onClick={() => handleTeamSelect(team.id)}
+    >
+      <span className="team-checkbox">
+        {/* Empty checkbox for unselected teams */}
+      </span>
+      <span className="team-name">
+        {team.name} ({team.division})
+      </span>
+    </div>
+  ))
                   )}
                 </div>
               )}
