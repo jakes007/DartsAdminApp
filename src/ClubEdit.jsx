@@ -655,18 +655,19 @@ const ClubEdit = () => {
                       Add Team
                     </button>
                     <button
-                      className={`action-btn add-player-btn ${
-                        !club.teams || club.teams.length === 0 ? "disabled" : ""
-                      }`}
-                      onClick={() => openAddPlayerModal(club)}
-                      title={
-                        !club.teams || club.teams.length === 0
-                          ? "Please add a team first"
-                          : "Add Player"
-                      }
-                    >
-                      Add Player
-                    </button>
+  className={`action-btn add-player-btn ${
+    !club.teams || club.teams.length === 0 ? "disabled" : ""
+  }`}
+  disabled={!club.teams || club.teams.length === 0}
+  onClick={!club.teams || club.teams.length === 0 ? undefined : () => openAddPlayerModal(club)}
+  title={
+    !club.teams || club.teams.length === 0
+      ? "Please add a team first"
+      : "Add Player"
+  }
+>
+  Add Player
+</button>
                   </div>
                 </div>
               ))}
