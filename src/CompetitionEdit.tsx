@@ -15,6 +15,12 @@ interface Competition {
   division?: string;
 }
 
+interface Team {
+  id: string;
+  name: string;
+  division?: string;
+}
+
 const CompetitionEdit = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -33,6 +39,8 @@ const CompetitionEdit = () => {
   const [allTeams, setAllTeams] = useState<any[]>([]);
   const [filteredTeams, setFilteredTeams] = useState<any[]>([]);
   const [selectedTeam, setSelectedTeam] = useState("");
+  const [teamToDelete, setTeamToDelete] = useState<any>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Fetch competition data, teams, and divisions
   useEffect(() => {
@@ -139,27 +147,26 @@ const CompetitionEdit = () => {
     }
   };
 
-  const handleDeleteTeam = async (teamId: string) => {
-    if (!window.confirm("Are you sure you want to remove this team from the competition?")) {
-      return;
-    }
+  const handleDeleteTeam = async () => {
+    if (!teamToDelete || !competition) return;
     
     try {
-      if (competition?.teamIds) {
-        const updatedTeamIds = competition.teamIds.filter((id: string) => id !== teamId);
-        
-        await updateDoc(doc(db, "competitions", competition.id), {
-          teamIds: updatedTeamIds,
-          teams: updatedTeamIds.length
-        });
-        
-        setTeams(prev => prev.filter(team => team.id !== teamId));
-        setCompetition((prev: Competition | null) => prev ? {
-          ...prev,
-          teamIds: updatedTeamIds,
-          teams: updatedTeamIds.length
-        } : null);
-      }
+      const updatedTeamIds = competition.teamIds?.filter((id: string) => id !== teamToDelete.id) || [];
+      
+      await updateDoc(doc(db, "competitions", competition.id), {
+        teamIds: updatedTeamIds,
+        teams: updatedTeamIds.length
+      });
+      
+      setTeams(prev => prev.filter(team => team.id !== teamToDelete.id));
+      setCompetition((prev: Competition | null) => prev ? {
+        ...prev,
+        teamIds: updatedTeamIds,
+        teams: updatedTeamIds.length
+      } : null);
+      
+      setShowDeleteModal(false);
+      setTeamToDelete(null);
     } catch (error) {
       console.error("Error removing team from competition:", error);
       alert("Failed to remove team from competition. Please try again.");
@@ -224,6 +231,16 @@ const CompetitionEdit = () => {
   const handleBackToSetup = () => {
     navigate("/setup");
   };
+
+  // Group teams by division
+  const teamsByDivision = teams.reduce((acc, team) => {
+    const division = team.division || "Unknown Division";
+    if (!acc[division]) {
+      acc[division] = [];
+    }
+    acc[division].push(team);
+    return acc;
+  }, {} as Record<string, Team[]>);
 
   if (loading) {
     return <div className="competition-edit-container">Loading...</div>;
@@ -360,7 +377,7 @@ const CompetitionEdit = () => {
                 <option value="">Select Team</option>
                 {filteredTeams.map(team => (
                   <option key={team.id} value={team.id}>
-                    {team.name} ({team.clubId})
+                    {team.name}
                   </option>
                 ))}
               </select>
@@ -378,29 +395,80 @@ const CompetitionEdit = () => {
 
         <div className="teams-list-container">
           <h2>Teams in this Competition ({teams.length})</h2>
-          {teams.length === 0 ? (
+          
+          {Object.keys(teamsByDivision).length === 0 ? (
             <p className="no-teams">No teams found for this competition.</p>
           ) : (
-            <div className="teams-grid">
-              {teams.map(team => (
-                <div key={team.id} className="team-card">
-                  <div className="team-info">
-                    <h3>{team.name}</h3>
-                    <p>Division: {team.division}</p>
-                    <p>Club ID: {team.clubId}</p>
+            <div className="teams-by-division">
+              {Object.entries(teamsByDivision as Record<string, Team[]>).map(([division, divisionTeams]) => (
+                <div key={division} className="division-group">
+                  <h3 className="division-title">{division}</h3>
+                  <div className="division-teams">
+                    {divisionTeams.map(team => (
+                      <div key={team.id} className="team-card">
+                        <div className="team-info">
+                          <h4>{team.name}</h4>
+                          {/* Removed club ID display as requested */}
+                        </div>
+                        <button 
+                          className="delete-team-btn"
+                          onClick={() => {
+                            setTeamToDelete(team);
+                            setShowDeleteModal(true);
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                  <button 
-                    className="delete-team-btn"
-                    onClick={() => handleDeleteTeam(team.id)}
-                  >
-                    Remove
-                  </button>
                 </div>
               ))}
             </div>
           )}
         </div>
       </main>
+
+      {/* Delete Team Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="modal-overlay">
+          <div className="modal delete-confirm-modal">
+            <div className="modal-header">
+              <h3>Confirm Remove Team</h3>
+              <button
+                className="modal-close"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="modal-content">
+              <p>
+                Are you sure you want to remove <strong>{teamToDelete?.name}</strong> from this competition?
+              </p>
+              <p>
+                This action cannot be undone.
+              </p>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="modal-btn modal-cancel"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn modal-delete"
+                onClick={handleDeleteTeam}
+              >
+                Remove Team
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

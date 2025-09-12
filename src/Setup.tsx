@@ -175,10 +175,12 @@ const Setup = () => {
                   </div>
 
                   <div className="competition-details">
-                    <div className="detail-item">
-                      <span className="detail-label">Type:</span>
-                      <span className="detail-value">{competition.type}</span>
-                    </div>
+                  <div className="detail-item">
+  <span className="detail-label">Type:</span>
+  <span className="detail-value">
+    {competition.type.charAt(0).toUpperCase() + competition.type.slice(1)}
+  </span>
+</div>
 
                     <div className="detail-item">
                       <span className="detail-label">Teams:</span>
