@@ -21,6 +21,10 @@ const CompetitionEdit = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [competition, setCompetition] = useState<Competition | null>(null);
+  const [availableDivisions, setAvailableDivisions] = useState<string[]>([]);
+const [selectedDivision, setSelectedDivision] = useState("");
+const [availableTeams, setAvailableTeams] = useState<any[]>([]);
+const [selectedTeam, setSelectedTeam] = useState("");
   const [teams, setTeams] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -30,6 +34,73 @@ const CompetitionEdit = () => {
     status: "Upcoming",
     division: "Premier"
   });
+
+  // Add this function to handle adding a team to the competition
+const handleAddTeam = async () => {
+  if (!selectedTeam || !competition) return;
+  
+  try {
+    const updatedTeamIds = [...(competition.teamIds || []), selectedTeam];
+    
+    // Update Firestore
+    await updateDoc(doc(db, "competitions", competition.id), {
+      teamIds: updatedTeamIds,
+      teams: updatedTeamIds.length
+    });
+    
+    // Update local state
+    setCompetition({
+      ...competition,
+      teamIds: updatedTeamIds,
+      teams: updatedTeamIds.length
+    });
+    
+    // Fetch and add the team details to local teams state
+    const teamDoc = await getDoc(doc(db, "teams", selectedTeam));
+    if (teamDoc.exists()) {
+      setTeams(prev => [...prev, {
+        id: teamDoc.id,
+        ...teamDoc.data()
+      }]);
+    }
+    
+    // Reset selection
+    setSelectedTeam("");
+    setSelectedDivision("");
+  } catch (error) {
+    console.error("Error adding team to competition:", error);
+    alert("Failed to add team to competition. Please try again.");
+  }
+};
+
+// Add this function to filter teams by division
+// Change this function to be async
+const handleDivisionChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const division = e.target.value;
+  setSelectedDivision(division);
+  
+  if (division) {
+    const filtered = availableTeams.filter(team => team.division === division);
+    setAvailableTeams(filtered);
+  } else {
+    // If no division selected, show all teams
+    try {
+      const teamsSnapshot = await getDocs(collection(db, "teams"));
+      const allTeams: any[] = [];
+      
+      teamsSnapshot.forEach((doc) => {
+        allTeams.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      setAvailableTeams(allTeams);
+    } catch (error) {
+      console.error("Error fetching teams:", error);
+    }
+  }
+};
 
   // Fetch competition data
   // Replace the team fetching logic in the useEffect:
@@ -61,6 +132,35 @@ useEffect(() => {
           status: data.status || "Upcoming",
           division: data.division || "Premier"
         });
+
+        useEffect(() => {
+          const fetchDivisionsAndTeams = async () => {
+            try {
+              // Fetch all teams to extract unique divisions
+              const teamsSnapshot = await getDocs(collection(db, "teams"));
+              const divisions = new Set<string>();
+              const allTeams: any[] = [];
+              
+              teamsSnapshot.forEach((doc) => {
+                const data = doc.data();
+                if (data.division) {
+                  divisions.add(data.division);
+                }
+                allTeams.push({
+                  id: doc.id,
+                  ...data
+                });
+              });
+              
+              setAvailableDivisions(Array.from(divisions));
+              setAvailableTeams(allTeams);
+            } catch (error) {
+              console.error("Error fetching divisions and teams:", error);
+            }
+          };
+          
+          fetchDivisionsAndTeams();
+        }, []);
         
         // ✅ Fetch the ACTUAL teams in this competition using teamIds
         if (data.teamIds && data.teamIds.length > 0) {
@@ -112,10 +212,13 @@ useEffect(() => {
     
     try {
       const docRef = doc(db, "competitions", id);
-      // ✅ Preserve the existing teamIds when updating other fields
+      // Auto-calculate teams count from teamIds
+      const teamCount = competition?.teamIds?.length || 0;
+      
       await updateDoc(docRef, {
         ...formData,
-        teamIds: competition?.teamIds || [] // Keep existing team IDs
+        teams: teamCount, // Auto-calculate
+        teamIds: competition?.teamIds || []
       });
       navigate("/setup");
     } catch (error) {
@@ -163,6 +266,8 @@ useEffect(() => {
     return <div className="competition-edit-container">Competition not found</div>;
   }
 
+  
+
   return (
     <div className="competition-edit-container">
       <header className="competition-edit-header">
@@ -209,17 +314,7 @@ useEffect(() => {
               </select>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="teams">Number of Teams</label>
-              <input
-                type="number"
-                id="teams"
-                name="teams"
-                value={formData.teams}
-                onChange={handleInputChange}
-                min="1"
-              />
-            </div>
+            
 
             <div className="form-group">
               <label htmlFor="startDate">Start Date</label>
@@ -273,6 +368,53 @@ useEffect(() => {
             </button>
           </div>
         </div>
+
+        <div className="add-team-section">
+  <h3>Add Team to Competition</h3>
+  <div className="add-team-form">
+    <div className="form-group">
+      <label htmlFor="divisionSelect">Division</label>
+      <select
+        id="divisionSelect"
+        value={selectedDivision}
+        onChange={handleDivisionChange}
+      >
+        <option value="">Select Division</option>
+        {availableDivisions.map(division => (
+          <option key={division} value={division}>{division}</option>
+        ))}
+      </select>
+    </div>
+    
+    <div className="form-group">
+      <label htmlFor="teamSelect">Team</label>
+      <select
+        id="teamSelect"
+        value={selectedTeam}
+        onChange={(e) => setSelectedTeam(e.target.value)}
+        disabled={!selectedDivision}
+      >
+        <option value="">Select Team</option>
+        {availableTeams
+          .filter(team => team.division === selectedDivision)
+          .map(team => (
+            <option key={team.id} value={team.id}>
+              {team.name} ({team.clubId})
+            </option>
+          ))
+        }
+      </select>
+    </div>
+    
+    <button
+      className="add-team-btn"
+      onClick={handleAddTeam}
+      disabled={!selectedTeam}
+    >
+      Add Team
+    </button>
+  </div>
+</div>
 
         <div className="teams-list-container">
           <h2>Teams in this Competition</h2>
