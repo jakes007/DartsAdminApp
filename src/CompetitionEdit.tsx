@@ -4,7 +4,6 @@ import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } 
 import { db } from "./firebase";
 import "./CompetitionEdit.css";
 
-// ✅ Add this interface definition
 interface Competition {
   id: string;
   name: string;
@@ -21,204 +20,117 @@ const CompetitionEdit = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [competition, setCompetition] = useState<Competition | null>(null);
-  const [availableDivisions, setAvailableDivisions] = useState<string[]>([]);
-const [selectedDivision, setSelectedDivision] = useState("");
-const [availableTeams, setAvailableTeams] = useState<any[]>([]);
-const [selectedTeam, setSelectedTeam] = useState("");
   const [teams, setTeams] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     type: "league",
-    teams: 0,
     startDate: "",
     status: "Upcoming",
     division: "Premier"
   });
+  const [availableDivisions, setAvailableDivisions] = useState<string[]>([]);
+  const [selectedDivision, setSelectedDivision] = useState("");
+  const [allTeams, setAllTeams] = useState<any[]>([]);
+  const [filteredTeams, setFilteredTeams] = useState<any[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState("");
 
-  // Add this function to handle adding a team to the competition
-const handleAddTeam = async () => {
-  if (!selectedTeam || !competition) return;
-  
-  try {
-    const updatedTeamIds = [...(competition.teamIds || []), selectedTeam];
-    
-    // Update Firestore
-    await updateDoc(doc(db, "competitions", competition.id), {
-      teamIds: updatedTeamIds,
-      teams: updatedTeamIds.length
-    });
-    
-    // Update local state
-    setCompetition({
-      ...competition,
-      teamIds: updatedTeamIds,
-      teams: updatedTeamIds.length
-    });
-    
-    // Fetch and add the team details to local teams state
-    const teamDoc = await getDoc(doc(db, "teams", selectedTeam));
-    if (teamDoc.exists()) {
-      setTeams(prev => [...prev, {
-        id: teamDoc.id,
-        ...teamDoc.data()
-      }]);
-    }
-    
-    // Reset selection
-    setSelectedTeam("");
-    setSelectedDivision("");
-  } catch (error) {
-    console.error("Error adding team to competition:", error);
-    alert("Failed to add team to competition. Please try again.");
-  }
-};
-
-// Add this function to filter teams by division
-// Change this function to be async
-const handleDivisionChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-  const division = e.target.value;
-  setSelectedDivision(division);
-  
-  if (division) {
-    const filtered = availableTeams.filter(team => team.division === division);
-    setAvailableTeams(filtered);
-  } else {
-    // If no division selected, show all teams
-    try {
-      const teamsSnapshot = await getDocs(collection(db, "teams"));
-      const allTeams: any[] = [];
+  // Fetch competition data, teams, and divisions
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!id) return;
       
-      teamsSnapshot.forEach((doc) => {
-        allTeams.push({
-          id: doc.id,
-          ...doc.data()
-        });
-      });
-      
-      setAvailableTeams(allTeams);
-    } catch (error) {
-      console.error("Error fetching teams:", error);
-    }
-  }
-};
-
-  // Fetch competition data
-  // Replace the team fetching logic in the useEffect:
-useEffect(() => {
-  const fetchCompetition = async () => {
-    if (!id) return;
-    
-    try {
-      const docRef = doc(db, "competitions", id);
-      const docSnap = await getDoc(docRef);
-      
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setCompetition({ 
-          id: docSnap.id, 
-          name: data.name || "",
-          type: data.type || "league",
-          teams: data.teams || 0,
-          startDate: data.startDate || "",
-          status: data.status || "Upcoming",
-          division: data.division || "Premier",
-          teamIds: data.teamIds || [] // Add this too
-        });
-        setFormData({
-          name: data.name || "",
-          type: data.type || "league",
-          teams: data.teams || 0,
-          startDate: data.startDate || "",
-          status: data.status || "Upcoming",
-          division: data.division || "Premier"
-        });
-
-        useEffect(() => {
-          const fetchDivisionsAndTeams = async () => {
-            try {
-              // Fetch all teams to extract unique divisions
-              const teamsSnapshot = await getDocs(collection(db, "teams"));
-              const divisions = new Set<string>();
-              const allTeams: any[] = [];
-              
-              teamsSnapshot.forEach((doc) => {
-                const data = doc.data();
-                if (data.division) {
-                  divisions.add(data.division);
-                }
-                allTeams.push({
-                  id: doc.id,
-                  ...data
-                });
-              });
-              
-              setAvailableDivisions(Array.from(divisions));
-              setAvailableTeams(allTeams);
-            } catch (error) {
-              console.error("Error fetching divisions and teams:", error);
-            }
+      try {
+        // Fetch competition
+        const docRef = doc(db, "competitions", id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const compData = {
+            id: docSnap.id,
+            name: data.name || "",
+            type: data.type || "league",
+            teams: data.teams || 0,
+            startDate: data.startDate || "",
+            status: data.status || "Upcoming",
+            division: data.division || "Premier",
+            teamIds: data.teamIds || []
           };
           
-          fetchDivisionsAndTeams();
-        }, []);
-        
-        // ✅ Fetch the ACTUAL teams in this competition using teamIds
-        if (data.teamIds && data.teamIds.length > 0) {
-          const teamsData = [];
-          for (const teamId of data.teamIds) {
-            const teamDoc = await getDoc(doc(db, "teams", teamId));
-            if (teamDoc.exists()) {
-              teamsData.push({
-                id: teamDoc.id,
-                ...teamDoc.data()
-              });
+          setCompetition(compData);
+          setFormData({
+            name: data.name || "",
+            type: data.type || "league",
+            startDate: data.startDate || "",
+            status: data.status || "Upcoming",
+            division: data.division || "Premier"
+          });
+          
+          // Fetch teams in this competition
+          if (data.teamIds && data.teamIds.length > 0) {
+            const teamsData = [];
+            for (const teamId of data.teamIds) {
+              const teamDoc = await getDoc(doc(db, "teams", teamId));
+              if (teamDoc.exists()) {
+                teamsData.push({
+                  id: teamDoc.id,
+                  ...teamDoc.data()
+                });
+              }
             }
+            setTeams(teamsData);
           }
-          setTeams(teamsData);
-        } else if (data.division) {
-          // Fallback: fetch by division (for old competitions without teamIds)
-          const teamsQuery = query(
-            collection(db, "teams"), 
-            where("division", "==", data.division)
-          );
-          const teamsSnapshot = await getDocs(teamsQuery);
-          const teamsData = teamsSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-          setTeams(teamsData);
         }
+        
+        // Fetch all teams and divisions
+        const teamsSnapshot = await getDocs(collection(db, "teams"));
+        const divisions = new Set<string>();
+        const allTeamsData: any[] = [];
+        
+        teamsSnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.division) {
+            divisions.add(data.division);
+          }
+          allTeamsData.push({
+            id: doc.id,
+            ...data
+          });
+        });
+        
+        setAvailableDivisions(Array.from(divisions));
+        setAllTeams(allTeamsData);
+        setFilteredTeams(allTeamsData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLoading(false);
       }
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching competition:", error);
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchCompetition();
-}, [id]);
+    fetchData();
+  }, [id]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === "teams" ? parseInt(value) : value
+      [name]: value
     }));
   };
 
   const handleSave = async () => {
-    if (!id) return;
+    if (!id || !competition) return;
     
     try {
       const docRef = doc(db, "competitions", id);
       // Auto-calculate teams count from teamIds
-      const teamCount = competition?.teamIds?.length || 0;
+      const teamCount = competition.teamIds?.length || 0;
       
       await updateDoc(docRef, {
         ...formData,
-        teams: teamCount, // Auto-calculate
-        teamIds: competition?.teamIds || []
+        teams: teamCount,
+        teamIds: competition.teamIds || []
       });
       navigate("/setup");
     } catch (error) {
@@ -254,6 +166,61 @@ useEffect(() => {
     }
   };
 
+  const handleDivisionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const division = e.target.value;
+    setSelectedDivision(division);
+    
+    if (division) {
+      // Filter the master list of all teams by the selected division
+      const filtered = allTeams.filter(team => team.division === division);
+      setFilteredTeams(filtered);
+    } else {
+      // If no division selected, show all teams
+      setFilteredTeams(allTeams);
+    }
+  };
+
+  const handleAddTeam = async () => {
+    if (!selectedTeam || !competition) return;
+    
+    try {
+      const updatedTeamIds = [...(competition.teamIds || []), selectedTeam];
+      
+      await updateDoc(doc(db, "competitions", competition.id), {
+        teamIds: updatedTeamIds,
+        teams: updatedTeamIds.length
+      });
+      
+      setCompetition({
+        ...competition,
+        teamIds: updatedTeamIds,
+        teams: updatedTeamIds.length
+      });
+      
+      // Find the team in our local state to avoid unnecessary Firestore call
+      const teamToAdd = allTeams.find(team => team.id === selectedTeam);
+      if (teamToAdd) {
+        setTeams(prev => [...prev, teamToAdd]);
+      } else {
+        // Fallback: fetch from Firestore if not found locally
+        const teamDoc = await getDoc(doc(db, "teams", selectedTeam));
+        if (teamDoc.exists()) {
+          setTeams(prev => [...prev, {
+            id: teamDoc.id,
+            ...teamDoc.data()
+          }]);
+        }
+      }
+      
+      setSelectedTeam("");
+      setSelectedDivision("");
+      setFilteredTeams(allTeams); // Reset to show all teams
+    } catch (error) {
+      console.error("Error adding team to competition:", error);
+      alert("Failed to add team to competition. Please try again.");
+    }
+  };
+
   const handleBackToSetup = () => {
     navigate("/setup");
   };
@@ -265,8 +232,6 @@ useEffect(() => {
   if (!competition) {
     return <div className="competition-edit-container">Competition not found</div>;
   }
-
-  
 
   return (
     <div className="competition-edit-container">
@@ -313,8 +278,6 @@ useEffect(() => {
                 <option value="tournament">Tournament</option>
               </select>
             </div>
-
-            
 
             <div className="form-group">
               <label htmlFor="startDate">Start Date</label>
@@ -370,56 +333,53 @@ useEffect(() => {
         </div>
 
         <div className="add-team-section">
-  <h3>Add Team to Competition</h3>
-  <div className="add-team-form">
-    <div className="form-group">
-      <label htmlFor="divisionSelect">Division</label>
-      <select
-        id="divisionSelect"
-        value={selectedDivision}
-        onChange={handleDivisionChange}
-      >
-        <option value="">Select Division</option>
-        {availableDivisions.map(division => (
-          <option key={division} value={division}>{division}</option>
-        ))}
-      </select>
-    </div>
-    
-    <div className="form-group">
-      <label htmlFor="teamSelect">Team</label>
-      <select
-        id="teamSelect"
-        value={selectedTeam}
-        onChange={(e) => setSelectedTeam(e.target.value)}
-        disabled={!selectedDivision}
-      >
-        <option value="">Select Team</option>
-        {availableTeams
-          .filter(team => team.division === selectedDivision)
-          .map(team => (
-            <option key={team.id} value={team.id}>
-              {team.name} ({team.clubId})
-            </option>
-          ))
-        }
-      </select>
-    </div>
-    
-    <button
-      className="add-team-btn"
-      onClick={handleAddTeam}
-      disabled={!selectedTeam}
-    >
-      Add Team
-    </button>
-  </div>
-</div>
+          <h3>Add Team to Competition</h3>
+          <div className="add-team-form">
+            <div className="form-group">
+              <label htmlFor="divisionSelect">Division</label>
+              <select
+                id="divisionSelect"
+                value={selectedDivision}
+                onChange={handleDivisionChange}
+              >
+                <option value="">Select Division</option>
+                {availableDivisions.map(division => (
+                  <option key={division} value={division}>{division}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="teamSelect">Team</label>
+              <select
+                id="teamSelect"
+                value={selectedTeam}
+                onChange={(e) => setSelectedTeam(e.target.value)}
+                disabled={!selectedDivision}
+              >
+                <option value="">Select Team</option>
+                {filteredTeams.map(team => (
+                  <option key={team.id} value={team.id}>
+                    {team.name} ({team.clubId})
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <button
+              className="add-team-btn"
+              onClick={handleAddTeam}
+              disabled={!selectedTeam}
+            >
+              Add Team
+            </button>
+          </div>
+        </div>
 
         <div className="teams-list-container">
-          <h2>Teams in this Competition</h2>
+          <h2>Teams in this Competition ({teams.length})</h2>
           {teams.length === 0 ? (
-            <p className="no-teams">No teams found for this division.</p>
+            <p className="no-teams">No teams found for this competition.</p>
           ) : (
             <div className="teams-grid">
               {teams.map(team => (
@@ -433,7 +393,7 @@ useEffect(() => {
                     className="delete-team-btn"
                     onClick={() => handleDeleteTeam(team.id)}
                   >
-                    Delete
+                    Remove
                   </button>
                 </div>
               ))}
