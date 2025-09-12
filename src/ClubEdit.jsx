@@ -115,22 +115,45 @@ const ClubEdit = () => {
 
   const handleRegisterClub = async (e) => {
     e.preventDefault();
+    
+    // Basic check for required fields
     if (newClub.name && newClub.email && newClub.code) {
       try {
-        // Create a new club document in 'clubs' collection
+        // --- NEW: CHECK FOR EXISTING CLUB ---
+        // 1. Create a query to look for a club with the same name (case-insensitive)
+        const clubsRef = collection(db, "clubs");
+        const q = query(clubsRef, where("name", ">=", newClub.name));
+        
+        // 2. Run the query
+        const querySnapshot = await getDocs(q);
+        
+        // 3. Check if any found club has the EXACT same name (ignoring case)
+        const existingClub = querySnapshot.docs.find(
+          (doc) => doc.data().name.toLowerCase() === newClub.name.toLowerCase()
+        );
+  
+        // 4. If a club was found, show an alert and STOP the function
+        if (existingClub) {
+          alert(`A club with the name "${newClub.name}" is already registered.`);
+          return; // This stops the function here, nothing else happens.
+        }
+        // --- END OF NEW CHECK ---
+  
+        // If no duplicate was found, continue with the original code to save the club.
         const docRef = await addDoc(collection(db, "clubs"), {
           name: newClub.name,
           email: newClub.email,
           code: newClub.code,
           createdAt: serverTimestamp(),
         });
-
-        // Optionally, you can store the auto-generated ID as clubId
+  
         await updateDoc(doc(db, "clubs", docRef.id), {
           clubId: docRef.id,
         });
-
+  
         setNewClub({ name: "", email: "", code: "" });
+        // You can also show a success message here if you want:
+        // alert("Club registered successfully!");
       } catch (error) {
         console.error("Error adding club: ", error);
         alert("Failed to register club. Please try again.");
@@ -207,19 +230,42 @@ const ClubEdit = () => {
     });
   };
 
-  const addTeamToList = () => {
-    if (
-      teamForm.name &&
-      !teamsToAdd.some((team) => team.name === teamForm.name)
-    ) {
-      setTeamsToAdd([
-        ...teamsToAdd,
-        {
-          ...teamForm,
-          id: Date.now().toString(),
-        },
-      ]);
-      setTeamForm({ name: "", division: "Premier" });
+  const addTeamToList = async () => { // Made this function 'async'
+    // Basic check for a team name
+    if (teamForm.name) {
+      try {
+        // --- NEW: CHECK FOR EXISTING TEAM (Across all clubs) ---
+        const teamsRef = collection(db, "teams");
+        const q = query(teamsRef, where("name", ">=", teamForm.name));
+        
+        const querySnapshot = await getDocs(q);
+        
+        const existingTeam = querySnapshot.docs.find(
+          (doc) => doc.data().name.toLowerCase() === teamForm.name.toLowerCase()
+        );
+  
+        // If a team was found, show an alert and STOP the function
+        if (existingTeam) {
+          alert(`A team with the name "${teamForm.name}" is already registered.`);
+          return; // This stops the function here.
+        }
+        // --- END OF NEW CHECK ---
+  
+        // If no duplicate was found, add the team to the list as before.
+        if (!teamsToAdd.some((team) => team.name === teamForm.name)) {
+          setTeamsToAdd([
+            ...teamsToAdd,
+            {
+              ...teamForm,
+              id: Date.now().toString(),
+            },
+          ]);
+          setTeamForm({ name: "", division: "Premier" });
+        }
+      } catch (error) {
+        console.error("Error checking for existing team:", error);
+        alert("Failed to verify team name. Please try again.");
+      }
     }
   };
 
